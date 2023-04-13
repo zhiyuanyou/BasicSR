@@ -16,7 +16,6 @@ if __name__ == "__main__":
             beta = np.round(beta, 2)
             rain_generator = RainGenerator([rain_type], [beta, beta])
             rain, img_rain = rain_generator(img)
-            cv2.imwrite(os.path.join(save_dir, "orig.png"), img)
             cv2.imwrite(
                 os.path.join(save_dir, f"{rain_type}_{beta}_{idx}_img.png"),
                 img_rain,
