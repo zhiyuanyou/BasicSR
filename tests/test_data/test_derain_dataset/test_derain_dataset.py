@@ -23,11 +23,11 @@ if __name__ == "__main__":
 
     for idx, batch in enumerate(train_loader):
         gt_path = batch["gt_path"]
-        gt, rain, img_rain = batch["gt"], batch["rain"], batch["img_rain"]
-        gt, rain, img_rain = tensor2img([gt, rain, img_rain], rgb2bgr=True, out_type=np.uint8, min_max=(0, 1))
+        gt, rain, lq = batch["gt"], batch["rain"], batch["lq"]
+        gt, rain, lq = tensor2img([gt, rain, lq], rgb2bgr=True, out_type=np.uint8, min_max=(0, 1))
         imwrite(gt, os.path.join(temp_test_dir, f"{idx + 1}_gt.jpg"))
         imwrite(rain, os.path.join(temp_test_dir, f"{idx + 1}_rain.jpg"))
-        imwrite(img_rain, os.path.join(temp_test_dir, f"{idx + 1}_img_rain.jpg"))
+        imwrite(lq, os.path.join(temp_test_dir, f"{idx + 1}_lq.jpg"))
         print(f"Succeed: batch {idx + 1}")
 
         if idx + 1 >= num_sample:
