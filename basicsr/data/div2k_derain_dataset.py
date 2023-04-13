@@ -6,7 +6,7 @@ from torchvision.transforms.functional import normalize
 from basicsr.data.data_util import paths_from_lmdb
 from basicsr.data.derain_util import RainGenerator
 from basicsr.data.transforms import augment
-from basicsr.data.transforms_derain import paired_random_crop_with_mask
+from basicsr.data.transforms_derain import paired_random_crop_with_mask, paired_resize_with_mask
 from basicsr.utils import FileClient, get_root_logger, imfrombytes, img2tensor, scandir
 from basicsr.utils.registry import DATASET_REGISTRY
 
@@ -65,10 +65,13 @@ class DIV2KDerainDataset(data.Dataset):
         if np.random.uniform() < self.rain_prob:
             rain, img_rain = self.rain_generator(img_gt)
 
+        # resize
+        resize = self.opt["resize"]
+        img_gt, rain, img_rain = paired_resize_with_mask(img_gt, rain, img_rain, resize)
         if self.opt['phase'] == 'train':
-            gt_size = self.opt['gt_size']
+            crop_size = self.opt['crop_size']
             # random crop
-            img_gt, rain, img_rain = paired_random_crop_with_mask(img_gt, rain, img_rain, gt_size, scale, gt_path)
+            img_gt, rain, img_rain = paired_random_crop_with_mask(img_gt, rain, img_rain, crop_size, scale, gt_path)
             # flip, rotation
             use_flip = self.opt.get("use_flip", False)
             use_rot = self.opt.get("use_rot", False)
