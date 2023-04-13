@@ -5,7 +5,7 @@ import os
 from basicsr.data.derain_util import RainGenerator
 
 if __name__ == "__main__":
-    num_img = 1
+    num_img = 2
     save_dir = "./temp_test_dir"
     os.makedirs(save_dir, exist_ok=True)
     img = cv2.imread("../data/div2k_0390.png")
@@ -22,4 +22,4 @@ if __name__ == "__main__":
                 img_rain,
             )
             cv2.imwrite(os.path.join(save_dir, f"{rain_type}_{beta}_{idx}_rain.png"), rain)
-            print(rain_type, beta, idx)
+            print(f"Succeed: {idx + 1}th, {rain_type} rain, beta: {beta}")
