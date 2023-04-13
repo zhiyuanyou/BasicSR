@@ -1,0 +1,37 @@
+# general settings
+scale: 1
+manual_seed: 139
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: DIV2K
+    type: DIV2KDerainDataset
+    dataroot_gt: ../../../datasets/DIV2K/DIV2K_train_HR/
+    io_backend:
+      type: disk
+
+    gt_size: 256
+    use_hflip: true
+    use_rot: false
+
+    rain_prob: 1.0
+    rain_types: [small, medium, large, random]
+    beta: [0.6, 1.0]
+
+    # data loader
+    num_worker_per_gpu: 6
+    batch_size_per_gpu: 4
+    dataset_enlarge_ratio: 1
+    prefetch_mode: ~
+
+  val:
+    name: DIV2K
+    type: DIV2KDerainDataset
+    dataroot_gt: ../../../datasets/DIV2K/DIV2K_valid_HR/
+    io_backend:
+      type: disk
+
+    rain_prob: 1.0
+    rain_types: [small, medium, large, random]
+    beta: [0.6, 1.0]
