@@ -83,7 +83,7 @@ class DIV2KDerainDataset(data.Dataset):
             normalize(img_gt, self.mean, self.std, inplace=True)
             normalize(img_rain, self.mean, self.std, inplace=True)
 
-        return {'gt': img_gt, 'rain': rain, 'lq': img_rain, 'gt_path': gt_path}
+        return {'gt': img_gt, 'rain': rain, 'lq': img_rain, 'gt_path': gt_path, 'lq_path': gt_path}
 
     def __len__(self):
         return len(self.paths)
