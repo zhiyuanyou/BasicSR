@@ -153,18 +153,6 @@ def parse_options(root_path, is_train=True):
     if opt['num_gpu'] == 'auto':
         opt['num_gpu'] = torch.cuda.device_count()
 
-    # datasets
-    for phase, dataset in opt['datasets'].items():
-        # for multiple datasets, e.g., val_1, val_2; test_1, test_2
-        phase = phase.split('_')[0]
-        dataset['phase'] = phase
-        if 'scale' in opt:
-            dataset['scale'] = opt['scale']
-        if dataset.get('dataroot_gt') is not None:
-            dataset['dataroot_gt'] = osp.expanduser(dataset['dataroot_gt'])
-        if dataset.get('dataroot_lq') is not None:
-            dataset['dataroot_lq'] = osp.expanduser(dataset['dataroot_lq'])
-
     # paths
     for key, val in opt['path'].items():
         if (val is not None) and ('resume_state' in key or 'pretrain_network' in key):
@@ -197,6 +185,19 @@ def parse_options(root_path, is_train=True):
         opt['path']['results_root'] = results_root
         opt['path']['log'] = results_root
         opt['path']['visualization'] = osp.join(results_root, 'visualization')
+
+    # datasets
+    for phase, dataset in opt['datasets'].items():
+        # for multiple datasets, e.g., val_1, val_2; test_1, test_2
+        phase = phase.split('_')[0]
+        dataset['phase'] = phase
+        if 'scale' in opt:
+            dataset['scale'] = opt['scale']
+        if dataset.get('dataroot_gt') is not None:
+            dataset['dataroot_gt'] = osp.expanduser(dataset['dataroot_gt'])
+        if dataset.get('dataroot_lq') is not None:
+            dataset['dataroot_lq'] = osp.expanduser(dataset['dataroot_lq'])
+        dataset["vis_path"] = opt['path']['visualization']
 
     return opt, args
 

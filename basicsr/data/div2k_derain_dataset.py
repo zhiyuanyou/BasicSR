@@ -7,7 +7,7 @@ from basicsr.data.data_util import paths_from_lmdb
 from basicsr.data.derain_util import RainGenerator
 from basicsr.data.transforms import augment
 from basicsr.data.transforms_derain import paired_random_crop_with_mask, paired_resize_with_mask
-from basicsr.utils import FileClient, get_root_logger, imfrombytes, img2tensor, scandir
+from basicsr.utils import FileClient, get_root_logger, imfrombytes, img2tensor, imwrite, scandir
 from basicsr.utils.registry import DATASET_REGISTRY
 
 
@@ -26,6 +26,8 @@ class DIV2KDerainDataset(data.Dataset):
         self.io_backend_opt = opt['io_backend']
         self.mean = opt['mean'] if 'mean' in opt else None
         self.std = opt['std'] if 'std' in opt else None
+        self.add_rain = opt.get("add_rain", None)
+        self.vis_lq = opt.get("vis_lq", None)
 
         self.gt_folder = opt['dataroot_gt']
 
@@ -62,7 +64,7 @@ class DIV2KDerainDataset(data.Dataset):
         # add rain
         img_rain = img_gt.copy()
         rain = np.zeros((h, w, 3))
-        if np.random.uniform() < self.rain_prob:
+        if np.random.uniform() < self.rain_prob and self.add_rain:
             rain, img_rain = self.rain_generator(img_gt)
 
         # resize
@@ -76,6 +78,11 @@ class DIV2KDerainDataset(data.Dataset):
             use_flip = self.opt.get("use_flip", False)
             use_rot = self.opt.get("use_rot", False)
             img_gt, rain, img_rain = augment([img_gt, rain, img_rain], use_flip, use_rot)
+
+        if self.vis_lq["flag"]:
+            img_name = osp.splitext(osp.basename(gt_path))[0]
+            save_img_path = osp.join(self.opt["vis_path"], self.opt["name"], f'{img_name}_{self.vis_lq["suffix"]}.png')
+            imwrite(img_rain, save_img_path)
 
         # BGR to RGB, HWC to CHW, numpy to tensor
         img_gt, rain, img_rain = img2tensor([img_gt, rain, img_rain], bgr2rgb=True, float32=True)
