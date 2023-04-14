@@ -23,21 +23,21 @@ class DerainDataset(data.Dataset):
         self.opt = opt
         # file client (io backend)
         self.file_client = None
-        self.io_backend_opt = opt['io_backend']
-        self.mean = opt['mean'] if 'mean' in opt else None
-        self.std = opt['std'] if 'std' in opt else None
+        self.io_backend_opt = opt["io_backend"]
+        self.mean = opt.get("mean", None)
+        self.std = opt.get("std", None)
         self.add_rain = opt.get("add_rain", True)
         self.vis_lq = opt.get("vis_lq", None)
 
-        self.gt_folder = opt['dataroot_gt']
+        self.gt_folder = opt["dataroot_gt"]
 
-        if self.io_backend_opt['type'] == 'lmdb':
-            self.io_backend_opt['db_paths'] = [self.gt_folder]
-            self.io_backend_opt['client_keys'] = ['gt']
+        if self.io_backend_opt["type"] == "lmdb":
+            self.io_backend_opt["db_paths"] = [self.gt_folder]
+            self.io_backend_opt["client_keys"] = ["gt"]
             self.paths = paths_from_lmdb(self.gt_folder)
-        elif 'meta_info_file' in self.opt:
-            with open(self.opt['meta_info_file'], 'r') as fin:
-                self.paths = [osp.join(self.gt_folder, line.split(' ')[0]) for line in fin]
+        elif "meta_info_file" in self.opt:
+            with open(self.opt["meta_info_file"], "r") as fin:
+                self.paths = [osp.join(self.gt_folder, line.split(" ")[0]) for line in fin]
         else:
             self.paths = sorted(list(scandir(self.gt_folder, full_path=True)))
 
@@ -51,13 +51,13 @@ class DerainDataset(data.Dataset):
 
     def __getitem__(self, index):
         if self.file_client is None:
-            self.file_client = FileClient(self.io_backend_opt.pop('type'), **self.io_backend_opt)
+            self.file_client = FileClient(self.io_backend_opt.pop("type"), **self.io_backend_opt)
 
-        scale = self.opt['scale']
+        scale = self.opt["scale"]
         # Load gt images. Dimension order: HWC; channel order: BGR;
         # image range: [0, 1], float32.
         gt_path = self.paths[index]
-        img_bytes = self.file_client.get(gt_path, 'gt')
+        img_bytes = self.file_client.get(gt_path, "gt")
         img_gt = imfrombytes(img_bytes, float32=False)
         h, w, _ = img_gt.shape
 
@@ -70,8 +70,8 @@ class DerainDataset(data.Dataset):
         # resize
         resize = self.opt["resize"]
         img_gt, rain, img_rain = paired_resize_with_mask(img_gt, rain, img_rain, resize)
-        if self.opt['phase'] == 'train':
-            crop_size = self.opt['crop_size']
+        if self.opt["phase"] == "train":
+            crop_size = self.opt["crop_size"]
             # random crop
             img_gt, rain, img_rain = paired_random_crop_with_mask(img_gt, rain, img_rain, crop_size, scale, gt_path)
             # flip, rotation
@@ -81,7 +81,7 @@ class DerainDataset(data.Dataset):
 
         if self.vis_lq:
             img_name = osp.splitext(osp.basename(gt_path))[0]
-            save_img_path = osp.join(self.opt["vis_path"], self.opt["name"], f'{img_name}_{self.vis_lq["suffix"]}.png')
+            save_img_path = osp.join(self.opt["vis_path"], self.opt["name"], f"{img_name}_{self.vis_lq['suffix']}.png")
             imwrite(img_rain, save_img_path)
 
         # BGR to RGB, HWC to CHW, numpy to tensor
@@ -93,7 +93,7 @@ class DerainDataset(data.Dataset):
             normalize(img_gt, self.mean, self.std, inplace=True)
             normalize(img_rain, self.mean, self.std, inplace=True)
 
-        return {'gt': img_gt, 'rain': rain, 'lq': img_rain, 'gt_path': gt_path, 'lq_path': gt_path}
+        return {"gt": img_gt, "rain": rain, "lq": img_rain, "gt_path": gt_path, "lq_path": gt_path}
 
     def __len__(self):
         return len(self.paths)
