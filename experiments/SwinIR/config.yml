@@ -9,8 +9,9 @@ manual_seed: 131
 datasets:
   train:
     name: DIV2K
-    type: DIV2KDerainDataset
+    type: DerainDataset
     dataroot_gt: ../../datasets/DIV2K/DIV2K_train_HR/
+    add_rain: true
     filename_tmpl: '{}'
     io_backend:
       type: disk
@@ -32,8 +33,9 @@ datasets:
 
   val:
     name: DIV2K
-    type: DIV2KDerainDataset
+    type: DerainDataset
     dataroot_gt: ../../datasets/DIV2K/DIV2K_valid_HR/
+    add_rain: true
     io_backend:
       type: disk
     # resize & transforms

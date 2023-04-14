@@ -9,7 +9,7 @@ manual_seed: 131
 datasets:
   val:
     name: DIV2K
-    type: DIV2KDerainDataset
+    type: DerainDataset
     dataroot_gt: ../../datasets/DIV2K/DIV2K_valid_HR/
     add_rain: true
     vis_lq:

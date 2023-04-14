@@ -12,21 +12,21 @@ from basicsr.utils.registry import DATASET_REGISTRY
 
 
 @DATASET_REGISTRY.register()
-class DIV2KDerainDataset(data.Dataset):
+class DerainDataset(data.Dataset):
     """Dataset specified for Deraining.
 
     Read GT images and then generate degraded LQ images on-the-fly.
     """
 
     def __init__(self, opt):
-        super(DIV2KDerainDataset, self).__init__()
+        super(DerainDataset, self).__init__()
         self.opt = opt
         # file client (io backend)
         self.file_client = None
         self.io_backend_opt = opt['io_backend']
         self.mean = opt['mean'] if 'mean' in opt else None
         self.std = opt['std'] if 'std' in opt else None
-        self.add_rain = opt.get("add_rain", None)
+        self.add_rain = opt.get("add_rain", True)
         self.vis_lq = opt.get("vis_lq", None)
 
         self.gt_folder = opt['dataroot_gt']

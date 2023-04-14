@@ -9,7 +9,7 @@ manual_seed: 131
 datasets:
   val:
     name: REAL
-    type: DIV2KDerainDataset
+    type: DerainDataset
     dataroot_gt: ../../datasets/REAL/
     add_rain: false
     vis_lq:
