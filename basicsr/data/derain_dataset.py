@@ -63,7 +63,7 @@ class DerainDataset(data.Dataset):
 
         # add rain
         img_rain = img_gt.copy()
-        rain = np.zeros((h, w, 3))
+        rain = np.zeros((h, w, 3), dtype=np.uint8)
         if np.random.uniform() < self.rain_prob and self.add_rain:
             rain, img_rain = self.rain_generator(img_gt)
 
