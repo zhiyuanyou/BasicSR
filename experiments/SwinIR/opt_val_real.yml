@@ -13,7 +13,6 @@ datasets:
     dataroot_gt: ../../datasets/REAL/
     add_rain: false
     vis_lq:
-      flag: true
       suffix: lq
     io_backend:
       type: disk

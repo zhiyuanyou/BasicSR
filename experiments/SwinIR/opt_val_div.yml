@@ -13,7 +13,6 @@ datasets:
     dataroot_gt: ../../datasets/DIV2K/DIV2K_valid_HR/
     add_rain: true
     vis_lq:
-      flag: true
       suffix: lq
     io_backend:
       type: disk

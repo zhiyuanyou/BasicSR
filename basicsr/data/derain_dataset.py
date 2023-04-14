@@ -79,7 +79,7 @@ class DerainDataset(data.Dataset):
             use_rot = self.opt.get("use_rot", False)
             img_gt, rain, img_rain = augment([img_gt, rain, img_rain], use_flip, use_rot)
 
-        if self.vis_lq["flag"]:
+        if self.vis_lq:
             img_name = osp.splitext(osp.basename(gt_path))[0]
             save_img_path = osp.join(self.opt["vis_path"], self.opt["name"], f'{img_name}_{self.vis_lq["suffix"]}.png')
             imwrite(img_rain, save_img_path)
