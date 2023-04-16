@@ -6,10 +6,11 @@ manual_seed: 131
 datasets:
   train:
     name: DIV2K
-    type: DIV2KDerainDataset
+    type: DerainDataset
     dataroot_gt: ../../../datasets/DIV2K/DIV2K_train_HR/
     io_backend:
       type: disk
+    num_img: 16
     # resize & transforms
     resize: 1024
     crop_size: 256
@@ -28,7 +29,7 @@ datasets:
 
   val:
     name: DIV2K
-    type: DIV2KDerainDataset
+    type: DerainDataset
     dataroot_gt: ../../../datasets/DIV2K/DIV2K_valid_HR/
     io_backend:
       type: disk

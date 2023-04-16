@@ -11,15 +11,15 @@ if __name__ == "__main__":
     os.makedirs(temp_test_dir, exist_ok=True)
 
     opt = yaml_load("./config.yml")
-    for phase, dataset_opt in opt['datasets'].items():
-        dataset_opt['phase'] = phase
-        dataset_opt['scale'] = opt['scale']
-        if phase == 'train':
+    for phase, dataset_opt in opt["datasets"].items():
+        dataset_opt["phase"] = phase
+        dataset_opt["scale"] = opt["scale"]
+        if phase == "train":
             train_set = build_dataset(dataset_opt)
-            train_loader = build_dataloader(train_set, dataset_opt, seed=opt['manual_seed'])
-        elif phase.split('_')[0] == 'val':
+            train_loader = build_dataloader(train_set, dataset_opt, seed=opt["manual_seed"])
+        elif phase.split("_")[0] == "val":
             val_set = build_dataset(dataset_opt)
-            val_loader = build_dataloader(val_set, dataset_opt, seed=opt['manual_seed'])
+            val_loader = build_dataloader(val_set, dataset_opt, seed=opt["manual_seed"])
 
     for idx, batch in enumerate(train_loader):
         gt_path = batch["gt_path"]

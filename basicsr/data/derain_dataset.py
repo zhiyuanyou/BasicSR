@@ -100,4 +100,4 @@ class DerainDataset(data.Dataset):
         return {"gt": img_gt, "rain": rain, "lq": img_rain, "gt_path": gt_path, "lq_path": gt_path}
 
     def __len__(self):
-        return len(self.paths)
+        return min(self.opt.get("num_img", float("inf")), len(self.paths))
