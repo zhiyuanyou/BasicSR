@@ -79,27 +79,20 @@ def paired_random_crop_with_mask(img_gts, mask_gts, img_lqs, gt_patch_size, scal
     return img_gts, mask_gts, img_lqs
 
 
-def paired_resize_with_mask(img_gt, mask_gt, img_lq, resize, resize_small=False):
+def resize_img_gt(img_gt, resize, resize_small=False):
     """
     Args:
         img_gt (ndarray): GT image.
-        mask_gt (ndarray): GT mask.
-        img_lq (ndarray): LQ image.
         resize (int): size for resize.
         resize_small (bool, optional): If True, image size smaller than resize will be resized. Defaults to False.
 
     Returns:
-        ndarray: GT image, GT mask, LQ image.
+        ndarray: GT image.
     """
 
-    assert img_gt.shape == mask_gt.shape == img_lq.shape, "size of gt, mask, lq must be the same!"
     h, w, _ = img_gt.shape
     if max(h, w) >= resize or resize_small:
         ratio = resize / max(h, w)
         h_new, w_new = round(h * ratio), round(w * ratio)
-
         img_gt = np.array(Image.fromarray(img_gt).resize((w_new, h_new), Image.Resampling.BICUBIC))
-        mask_gt = np.array(Image.fromarray(mask_gt).resize((w_new, h_new), Image.Resampling.BICUBIC))
-        img_lq = np.array(Image.fromarray(img_lq).resize((w_new, h_new), Image.Resampling.BICUBIC))
-
-    return img_gt, mask_gt, img_lq
+    return img_gt

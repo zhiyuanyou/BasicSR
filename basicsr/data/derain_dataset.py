@@ -6,7 +6,7 @@ from torchvision.transforms.functional import normalize
 from basicsr.data.data_util import paths_from_lmdb
 from basicsr.data.derain_util import RainGenerator, set_val_seed
 from basicsr.data.transforms import augment
-from basicsr.data.transforms_derain import paired_random_crop_with_mask, paired_resize_with_mask
+from basicsr.data.transforms_derain import paired_random_crop_with_mask, resize_img_gt
 from basicsr.utils import FileClient, get_root_logger, imfrombytes, img2tensor, imwrite, scandir
 from basicsr.utils.registry import DATASET_REGISTRY
 
@@ -63,6 +63,9 @@ class DerainDataset(data.Dataset):
         gt_path = self.paths[index]
         img_bytes = self.file_client.get(gt_path, "gt")
         img_gt = imfrombytes(img_bytes, float32=False)
+
+        # resize
+        img_gt = resize_img_gt(img_gt, self.opt["resize"])
         h, w, _ = img_gt.shape
 
         # add rain
@@ -71,9 +74,6 @@ class DerainDataset(data.Dataset):
         if np.random.uniform() < self.rain_prob and self.add_rain:
             rain, img_rain = self.rain_generator(img_gt)
 
-        # resize
-        resize = self.opt["resize"]
-        img_gt, rain, img_rain = paired_resize_with_mask(img_gt, rain, img_rain, resize)
         if self.opt["phase"] == "train":
             crop_size = self.opt["crop_size"]
             # random crop
