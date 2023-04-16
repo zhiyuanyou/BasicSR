@@ -4,7 +4,7 @@ import torch.utils.data as data
 from torchvision.transforms.functional import normalize
 
 from basicsr.data.data_util import paths_from_lmdb
-from basicsr.data.derain_util import RainGenerator
+from basicsr.data.derain_util import RainGenerator, set_val_seed
 from basicsr.data.transforms import augment
 from basicsr.data.transforms_derain import paired_random_crop_with_mask, paired_resize_with_mask
 from basicsr.utils import FileClient, get_root_logger, imfrombytes, img2tensor, imwrite, scandir
@@ -50,6 +50,10 @@ class DerainDataset(data.Dataset):
         logger.info(f"rain_generator with types: {self.rain_types}, beta: {self.beta}")
 
     def __getitem__(self, index):
+        # keep added rain same for different iterations
+        if self.opt["phase"] in ["val", "test"]:
+            set_val_seed(self.opt["manual_seed"] + index)
+
         if self.file_client is None:
             self.file_client = FileClient(self.io_backend_opt.pop("type"), **self.io_backend_opt)
 

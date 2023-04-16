@@ -198,6 +198,7 @@ def parse_options(root_path, is_train=True):
         if dataset.get('dataroot_lq') is not None:
             dataset['dataroot_lq'] = osp.expanduser(dataset['dataroot_lq'])
         dataset["vis_path"] = opt['path']['visualization']
+        dataset["manual_seed"] = opt["manual_seed"]
 
     return opt, args
 

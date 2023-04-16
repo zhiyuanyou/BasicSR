@@ -124,3 +124,15 @@ class RainGenerator:
         img_rain = cv2.addWeighted(img, 1, rain, beta=beta, gamma=0)
 
         return rain, img_rain
+
+
+def set_val_seed(seed):
+    """Set random seed for val & test
+
+    keep added rain same for different iterations
+
+    Args:
+        seed (int): random seed
+    """
+    np.random.seed(seed)
+    random.seed(seed)
