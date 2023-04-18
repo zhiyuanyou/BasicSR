@@ -41,7 +41,7 @@ datasets:
     # resize & transforms
     resize: 1024
     # rain generator
-    rain_prob: 0.9
+    rain_prob: 1.0
     rain_types: [small, medium, large, random]
     beta: [0.7, 1.0]
 
