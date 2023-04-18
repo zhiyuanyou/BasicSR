@@ -91,7 +91,7 @@ def resize_img_gt(img_gt, resize, resize_small=False):
     """
 
     h, w, _ = img_gt.shape
-    if max(h, w) >= resize or resize_small:
+    if max(h, w) > resize or resize_small:
         ratio = resize / max(h, w)
         h_new, w_new = round(h * ratio), round(w * ratio)
         img_gt = np.array(Image.fromarray(img_gt).resize((w_new, h_new), Image.Resampling.BICUBIC))
