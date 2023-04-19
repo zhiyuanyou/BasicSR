@@ -105,6 +105,7 @@ def parse_options(root_path, is_train=True):
     parser.add_argument('--local_rank', type=int, default=0)
     parser.add_argument(
         '--force_yml', nargs='+', default=None, help='Force to update yml files. Examples: train:ema_decay=0.999')
+    parser.add_argument('--ckpt_iter', type=int, default=None, help='Iter number to load ckpt for test')
     args = parser.parse_args()
 
     # parse yml to dict
@@ -177,6 +178,10 @@ def parse_options(root_path, is_train=True):
             opt['logger']['print_freq'] = 1
             opt['logger']['save_checkpoint_freq'] = 8
     else:  # test
+        assert args.ckpt_iter is not None, "test must need a valid ckpt_iter"
+        opt["name"] = opt["name"].replace("{iter}", str(args.ckpt_iter))
+        opt["path"]["pretrain_network_g"] = opt["path"]["pretrain_network_g"].replace("{iter}", str(args.ckpt_iter))
+
         results_root = opt['path'].get('results_root')
         if results_root is None:
             results_root = osp.join(root_path, 'results')

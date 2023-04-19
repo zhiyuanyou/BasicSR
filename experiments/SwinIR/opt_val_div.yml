@@ -1,5 +1,5 @@
 # general settings
-name: val_SwinIR_derain_scratch_DIV2K_250k_P128B8
+name: val_SwinIR_derain_scratch_DIV2K_{iter}_P128B8
 model_type: SwinIRModel
 scale: 1
 num_gpu: 1
@@ -40,7 +40,7 @@ network_g:
 
 # path
 path:
-  pretrain_network_g: ~
+  pretrain_network_g: ./train_SwinIR_derain_scratch_DIV2K_250k_P128B8/models/net_g_{iter}.pth
   strict_load_g: true
   resume_state: ~
   results_root: ./
