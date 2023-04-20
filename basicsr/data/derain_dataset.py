@@ -3,10 +3,9 @@ import os.path as osp
 import torch.utils.data as data
 from torchvision.transforms.functional import normalize
 
-from basicsr.data.data_util import paths_from_lmdb
 from basicsr.data.derain_util import RainGenerator, set_val_seed
 from basicsr.data.transforms import augment
-from basicsr.data.transforms_derain import paired_random_crop_with_mask, resize_img_gt
+from basicsr.data.transforms_derain import paired_random_crop_with_mask, paired_resize
 from basicsr.utils import FileClient, get_root_logger, imfrombytes, img2tensor, imwrite, scandir
 from basicsr.utils.registry import DATASET_REGISTRY
 
@@ -30,24 +29,30 @@ class DerainDataset(data.Dataset):
         self.vis_lq = opt.get("vis_lq", None)
 
         self.gt_folder = opt["dataroot_gt"]
+        self.lq_folder = opt.get("dataroot_lq", None)
 
-        if self.io_backend_opt["type"] == "lmdb":
-            self.io_backend_opt["db_paths"] = [self.gt_folder]
-            self.io_backend_opt["client_keys"] = ["gt"]
-            self.paths = paths_from_lmdb(self.gt_folder)
-        elif "meta_info_file" in self.opt:
+        if "meta_info_file" in self.opt:
             with open(self.opt["meta_info_file"], "r") as fin:
-                self.paths = [osp.join(self.gt_folder, line.split(" ")[0]) for line in fin]
+                self.gt_paths = [osp.join(self.gt_folder, line.strip().split(" ")[0]) for line in fin]
         else:
-            self.paths = sorted(list(scandir(self.gt_folder, full_path=True)))
+            self.gt_paths = sorted(list(scandir(self.gt_folder, full_path=True)))
 
-        self.rain_prob = opt["rain_prob"]
-        self.rain_types = opt["rain_types"]
-        self.beta = opt["beta"]
-        self.rain_generator = RainGenerator(self.rain_types, self.beta)
-        logger = get_root_logger()
-        logger.info(f"generate rain with prob: {self.rain_prob}")
-        logger.info(f"rain_generator with types: {self.rain_types}, beta: {self.beta}")
+        if self.lq_folder:
+            if "meta_info_file" in self.opt:
+                with open(self.opt["meta_info_file"], "r") as fin:
+                    self.lq_paths = [osp.join(self.lq_folder, line.strip().split(" ")[1]) for line in fin]
+            else:
+                self.lq_paths = sorted(list(scandir(self.lq_folder, full_path=True)))
+
+        if self.add_rain:
+            assert self.lq_folder is None, "lq_folder is not None, no need add rain"
+            self.rain_prob = opt["rain_prob"]
+            self.rain_types = opt["rain_types"]
+            self.beta = opt["beta"]
+            self.rain_generator = RainGenerator(self.rain_types, self.beta)
+            logger = get_root_logger()
+            logger.info(f"generate rain with prob: {self.rain_prob}")
+            logger.info(f"rain_generator with types: {self.rain_types}, beta: {self.beta}")
 
     def __getitem__(self, index):
         # keep added rain same for different iterations
@@ -60,44 +65,53 @@ class DerainDataset(data.Dataset):
         scale = self.opt["scale"]
         # Load gt images. Dimension order: HWC; channel order: BGR;
         # image range: [0, 1], float32.
-        gt_path = self.paths[index]
-        img_bytes = self.file_client.get(gt_path, "gt")
+        gt_path = self.gt_paths[index]
+        img_bytes = self.file_client.get(gt_path)
         img_gt = imfrombytes(img_bytes, float32=False)
 
+        # Load lq images. Dimension order: HWC; channel order: BGR;
+        # image range: [0, 1], float32.
+        lq_path = gt_path
+        img_lq = img_gt.copy()
+        if self.lq_folder:
+            lq_path = self.lq_paths[index]
+            img_bytes = self.file_client.get(lq_path)
+            img_lq = imfrombytes(img_bytes, float32=False)
+
         # resize
-        img_gt = resize_img_gt(img_gt, self.opt["resize"])
+        img_gt, img_lq = paired_resize(img_gt, img_lq, self.opt["resize"])
         h, w, _ = img_gt.shape
+        rain = np.zeros((h, w, 3), dtype=np.uint8)
 
         # add rain
-        img_rain = img_gt.copy()
-        rain = np.zeros((h, w, 3), dtype=np.uint8)
-        if np.random.uniform() < self.rain_prob and self.add_rain:
-            rain, img_rain = self.rain_generator(img_gt)
+        if self.add_rain:
+            if np.random.uniform() < self.rain_prob:
+                rain, img_lq = self.rain_generator(img_gt)
 
         if self.opt["phase"] == "train":
             crop_size = self.opt["crop_size"]
             # random crop
-            img_gt, rain, img_rain = paired_random_crop_with_mask(img_gt, rain, img_rain, crop_size, scale, gt_path)
+            img_gt, rain, img_lq = paired_random_crop_with_mask(img_gt, rain, img_lq, crop_size, scale, gt_path)
             # flip, rotation
             use_flip = self.opt.get("use_flip", False)
             use_rot = self.opt.get("use_rot", False)
-            img_gt, rain, img_rain = augment([img_gt, rain, img_rain], use_flip, use_rot)
+            img_gt, rain, img_lq = augment([img_gt, rain, img_lq], use_flip, use_rot)
 
         if self.vis_lq:
-            img_name = osp.splitext(osp.basename(gt_path))[0]
+            img_name = osp.splitext(osp.basename(lq_path))[0]
             save_img_path = osp.join(self.opt["vis_path"], self.opt["name"], f"{img_name}_{self.vis_lq['suffix']}.png")
-            imwrite(img_rain, save_img_path)
+            imwrite(img_lq, save_img_path)
 
         # BGR to RGB, HWC to CHW, numpy to tensor
-        img_gt, rain, img_rain = img2tensor([img_gt, rain, img_rain], bgr2rgb=True, float32=True)
-        img_gt, rain, img_rain = img_gt / 255., rain / 255., img_rain / 255.
+        img_gt, rain, img_lq = img2tensor([img_gt, rain, img_lq], bgr2rgb=True, float32=True)
+        img_gt, rain, img_lq = img_gt / 255., rain / 255., img_lq / 255.
 
         # normalize
         if self.mean is not None or self.std is not None:
             normalize(img_gt, self.mean, self.std, inplace=True)
-            normalize(img_rain, self.mean, self.std, inplace=True)
+            normalize(img_lq, self.mean, self.std, inplace=True)
 
-        return {"gt": img_gt, "rain": rain, "lq": img_rain, "gt_path": gt_path, "lq_path": gt_path}
+        return {"gt": img_gt, "rain": rain, "lq": img_lq, "gt_path": gt_path, "lq_path": lq_path}
 
     def __len__(self):
-        return min(self.opt.get("num_img", float("inf")), len(self.paths))
+        return min(self.opt.get("num_img", float("inf")), len(self.gt_paths))

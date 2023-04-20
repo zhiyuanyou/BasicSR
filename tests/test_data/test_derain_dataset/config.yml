@@ -30,12 +30,14 @@ datasets:
   val:
     name: DIV2K
     type: DerainDataset
-    dataroot_gt: ../../../datasets/DIV2K/DIV2K_valid_HR/
+    dataroot_gt: ../../../datasets/rain100l_test/rain_100_gt/
+    dataroot_lq: ../../../datasets/rain100l_test/rain_100_input/
     io_backend:
       type: disk
     # resize & transforms
     resize: 1024
     # rain generator
+    add_rain: false
     rain_prob: 0.9
     rain_types: [small, medium, large, random]
     beta: [0.7, 1.0]

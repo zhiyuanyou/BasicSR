@@ -14,6 +14,7 @@ if __name__ == "__main__":
     for phase, dataset_opt in opt["datasets"].items():
         dataset_opt["phase"] = phase
         dataset_opt["scale"] = opt["scale"]
+        dataset_opt["manual_seed"] = opt["manual_seed"]
         if phase == "train":
             train_set = build_dataset(dataset_opt)
             train_loader = build_dataloader(train_set, dataset_opt, seed=opt["manual_seed"])
