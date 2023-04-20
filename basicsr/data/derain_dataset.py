@@ -25,7 +25,7 @@ class DerainDataset(data.Dataset):
         self.io_backend_opt = opt["io_backend"]
         self.mean = opt.get("mean", None)
         self.std = opt.get("std", None)
-        self.add_rain = opt.get("add_rain", True)
+        self.add_rain_cfg = opt.get("add_rain_cfg", None)
         self.vis_lq = opt.get("vis_lq", None)
 
         self.gt_folder = opt["dataroot_gt"]
@@ -44,15 +44,13 @@ class DerainDataset(data.Dataset):
             else:
                 self.lq_paths = sorted(list(scandir(self.lq_folder, full_path=True)))
 
-        if self.add_rain:
+        if self.add_rain_cfg:
             assert self.lq_folder is None, "lq_folder is not None, no need add rain"
-            self.rain_prob = opt["rain_prob"]
-            self.rain_types = opt["rain_types"]
-            self.beta = opt["beta"]
-            self.rain_generator = RainGenerator(self.rain_types, self.beta)
+            self.rain_generator = RainGenerator(self.add_rain_cfg["rain_types"], self.add_rain_cfg["beta"])
             logger = get_root_logger()
-            logger.info(f"generate rain with prob: {self.rain_prob}")
-            logger.info(f"rain_generator with types: {self.rain_types}, beta: {self.beta}")
+            logger.info(f"generate rain with prob: {self.add_rain_cfg['rain_prob']}")
+            logger.info(
+                f"rain_generator with types: {self.add_rain_cfg['rain_types']}, beta: {self.add_rain_cfg['beta']}")
 
     def __getitem__(self, index):
         # keep added rain same for different iterations
@@ -84,8 +82,8 @@ class DerainDataset(data.Dataset):
         rain = np.zeros((h, w, 3), dtype=np.uint8)
 
         # add rain
-        if self.add_rain:
-            if np.random.uniform() < self.rain_prob:
+        if self.add_rain_cfg:
+            if np.random.uniform() < self.add_rain_cfg["rain_prob"]:
                 rain, img_lq = self.rain_generator(img_gt)
 
         if self.opt["phase"] == "train":

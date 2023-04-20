@@ -11,17 +11,12 @@ datasets:
     name: REAL
     type: DerainDataset
     dataroot_gt: ../../datasets/REAL/
-    add_rain: false
     vis_lq:
       suffix: lq
     io_backend:
       type: disk
     # resize & transforms
     resize: 1024
-    # rain generator
-    rain_prob: 1.0
-    rain_types: [small, medium, large, random]
-    beta: [0.7, 1.0]
 
 # network structures
 network_g:

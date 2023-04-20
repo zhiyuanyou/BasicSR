@@ -17,9 +17,10 @@ datasets:
     use_hflip: true
     use_rot: false
     # rain generator
-    rain_prob: 0.9
-    rain_types: [small, medium, large, random]
-    beta: [0.7, 1.0]
+    add_rain_cfg:
+      rain_prob: 0.9
+      rain_types: [small, medium, large, random]
+      beta: [0.7, 1.0]
 
     # data loader
     num_worker_per_gpu: 6
@@ -36,8 +37,3 @@ datasets:
       type: disk
     # resize & transforms
     resize: 1024
-    # rain generator
-    add_rain: false
-    rain_prob: 0.9
-    rain_types: [small, medium, large, random]
-    beta: [0.7, 1.0]

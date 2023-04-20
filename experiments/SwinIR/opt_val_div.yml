@@ -1,5 +1,5 @@
 # general settings
-name: val_SwinIR_derain_scratch_DIV2K_{iter}_P128B8
+name: iter{iter}
 model_type: SwinIRModel
 scale: 1
 num_gpu: 1
@@ -11,7 +11,6 @@ datasets:
     name: DIV2K
     type: DerainDataset
     dataroot_gt: ../../datasets/DIV2K/DIV2K_valid_HR/
-    add_rain: true
     vis_lq:
       suffix: lq
     io_backend:
@@ -19,9 +18,10 @@ datasets:
     # resize & transforms
     resize: 1024
     # rain generator
-    rain_prob: 1.0
-    rain_types: [small, medium, large, random]
-    beta: [0.7, 1.0]
+    add_rain_cfg:
+      rain_prob: 1.0
+      rain_types: [small, medium, large, random]
+      beta: [0.7, 1.0]
 
 # network structures
 network_g:
@@ -40,10 +40,11 @@ network_g:
 
 # path
 path:
-  pretrain_network_g: ./train_SwinIR_derain_scratch_DIV2K_250k_P128B8/models/net_g_{iter}.pth
+  pretrain_network_g: ./train_SwinIR_derain_scratch_DIV2K_120k_P128B8/models/net_g_{iter}.pth
+  param_key_g: params_ema
   strict_load_g: true
   resume_state: ~
-  results_root: ./
+  results_root: ./val_SwinIR_derain_scratch_DIV2K_P128B8
 
 # validation settings
 val:
