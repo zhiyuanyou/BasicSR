@@ -30,6 +30,7 @@ class DerainDataset(data.Dataset):
 
         self.gt_folder = opt["dataroot_gt"]
         self.lq_folder = opt.get("dataroot_lq", None)
+        self.mask_folder = opt.get("dataroot_mask", None)
 
         if "meta_info_file" in self.opt:
             with open(self.opt["meta_info_file"], "r") as fin:
@@ -43,6 +44,13 @@ class DerainDataset(data.Dataset):
                     self.lq_paths = [osp.join(self.lq_folder, line.strip().split(" ")[1]) for line in fin]
             else:
                 self.lq_paths = sorted(list(scandir(self.lq_folder, full_path=True)))
+
+        if self.mask_folder:
+            if "meta_info_file" in self.opt:
+                with open(self.opt["meta_info_file"], "r") as fin:
+                    self.mask_paths = [osp.join(self.mask_folder, line.strip().split(" ")[2]) for line in fin]
+            else:
+                self.mask_paths = sorted(list(scandir(self.mask_folder, full_path=True)))
 
         if self.add_rain_cfg:
             assert self.lq_folder is None, "lq_folder is not None, no need add rain"
@@ -61,14 +69,12 @@ class DerainDataset(data.Dataset):
             self.file_client = FileClient(self.io_backend_opt.pop("type"), **self.io_backend_opt)
 
         scale = self.opt["scale"]
-        # Load gt images. Dimension order: HWC; channel order: BGR;
-        # image range: [0, 1], float32.
+        # Load gt images. Dimension order: HWC; channel order: BGR
         gt_path = self.gt_paths[index]
         img_bytes = self.file_client.get(gt_path)
         img_gt = imfrombytes(img_bytes, float32=False)
 
-        # Load lq images. Dimension order: HWC; channel order: BGR;
-        # image range: [0, 1], float32.
+        # Load lq images. Dimension order: HWC; channel order: BGR
         lq_path = gt_path
         img_lq = img_gt.copy()
         if self.lq_folder:
@@ -76,10 +82,16 @@ class DerainDataset(data.Dataset):
             img_bytes = self.file_client.get(lq_path)
             img_lq = imfrombytes(img_bytes, float32=False)
 
-        # resize
-        img_gt, img_lq = paired_resize(img_gt, img_lq, self.opt["resize"])
+        # Load mask images. Dimension order: HWC; channel order: BGR
         h, w, _ = img_gt.shape
         rain = np.zeros((h, w, 3), dtype=np.uint8)
+        if self.mask_folder:
+            mask_path = self.mask_paths[index]
+            img_bytes = self.file_client.get(mask_path)
+            rain = imfrombytes(img_bytes, float32=False)
+
+        # resize
+        img_gt, img_lq, rain = paired_resize(img_gt, img_lq, rain, self.opt["resize"])
 
         # add rain
         if self.add_rain_cfg:

@@ -33,6 +33,7 @@ datasets:
     type: DerainDataset
     dataroot_gt: ../../../datasets/rain100l_test/rain_100_gt/
     dataroot_lq: ../../../datasets/rain100l_test/rain_100_input/
+    dataroot_mask: ../../../datasets/rain100l_test/rain100l_mask_id/
     io_backend:
       type: disk
     # resize & transforms
