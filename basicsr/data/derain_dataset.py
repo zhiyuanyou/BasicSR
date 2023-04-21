@@ -109,7 +109,7 @@ class DerainDataset(data.Dataset):
             normalize(img_gt, self.mean, self.std, inplace=True)
             normalize(img_lq, self.mean, self.std, inplace=True)
 
-        return {"gt": img_gt, "rain": rain, "lq": img_lq, "gt_path": gt_path, "lq_path": lq_path}
+        return {"gt": img_gt, "mask": rain, "lq": img_lq, "gt_path": gt_path, "lq_path": lq_path}
 
     def __len__(self):
         return min(self.opt.get("num_img", float("inf")), len(self.gt_paths))

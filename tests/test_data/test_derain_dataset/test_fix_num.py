@@ -27,7 +27,7 @@ if __name__ == "__main__":
             for _ in batch["gt_path"]:
                 gt_path_set.add(_)
 
-            gt, rain, lq = batch["gt"], batch["rain"], batch["lq"]
+            gt, rain, lq = batch["gt"], batch["mask"], batch["lq"]
             gt, rain, lq = tensor2img([gt, rain, lq], rgb2bgr=True, out_type=np.uint8, min_max=(0, 1))
             imwrite(gt, os.path.join(temp_test_dir, f"{idx + 1}_{epoch + 1}_gt.jpg"))
             imwrite(rain, os.path.join(temp_test_dir, f"{idx + 1}_{epoch + 1}_rain.jpg"))

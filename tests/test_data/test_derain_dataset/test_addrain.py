@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     for idx, batch in enumerate(train_loader):
         gt_path = batch["gt_path"]
-        gt, rain, lq = batch["gt"], batch["rain"], batch["lq"]
+        gt, rain, lq = batch["gt"], batch["mask"], batch["lq"]
         gt, rain, lq = tensor2img([gt, rain, lq], rgb2bgr=True, out_type=np.uint8, min_max=(0, 1))
         imwrite(gt, os.path.join(temp_test_dir, f"{idx + 1}_gt.jpg"))
         imwrite(rain, os.path.join(temp_test_dir, f"{idx + 1}_rain.jpg"))
