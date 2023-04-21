@@ -29,7 +29,7 @@ datasets:
     prefetch_mode: ~
 
   val:
-    name: DIV2K
+    name: Rain100L
     type: DerainDataset
     dataroot_gt: ../../../datasets/rain100l_test/rain_100_gt/
     dataroot_lq: ../../../datasets/rain100l_test/rain_100_input/
