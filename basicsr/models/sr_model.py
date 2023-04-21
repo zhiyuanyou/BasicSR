@@ -88,6 +88,8 @@ class SRModel(BaseModel):
         self.lq = data['lq'].to(self.device)
         if 'gt' in data:
             self.gt = data['gt'].to(self.device)
+        if 'mask' in data:
+            self.mask = data['mask'].to(self.device)
 
     def optimize_parameters(self, current_iter):
         self.optimizer_g.zero_grad()
@@ -211,6 +213,10 @@ class SRModel(BaseModel):
                 gt_img = tensor2img([visuals['gt']])
                 metric_data['img2'] = gt_img
                 del self.gt
+            if 'mask' in visuals:
+                mask = tensor2img([visuals['mask']])
+                metric_data['mask'] = mask
+                del self.mask
 
             # tentative for out of GPU memory
             del self.lq
@@ -269,6 +275,8 @@ class SRModel(BaseModel):
         out_dict['result'] = self.output.detach().cpu()
         if hasattr(self, 'gt'):
             out_dict['gt'] = self.gt.detach().cpu()
+        if hasattr(self, 'mask'):
+            out_dict['mask'] = self.mask.detach().cpu()
         return out_dict
 
     def save(self, epoch, current_iter):

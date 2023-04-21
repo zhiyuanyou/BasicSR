@@ -57,6 +57,56 @@ val:
       type: calculate_psnr
       crop_border: 2
       test_y_channel: false
+    mse_rain_B0_Nbg:
+      type: calculate_mse_derain
+      target: rain
+      binarize_mask: false
+      type_norm: bg
+    mse_rain_B0_Nimg:
+      type: calculate_mse_derain
+      target: rain
+      binarize_mask: false
+      type_norm: img
+    mse_rain_B0_N0:
+      type: calculate_mse_derain
+      target: rain
+      binarize_mask: false
+      type_norm: null
+    mse_rain_B1_Nbg:
+      type: calculate_mse_derain
+      target: rain
+      binarize_mask: true
+      type_norm: bg
+    mse_rain_B1_Nimg:
+      type: calculate_mse_derain
+      target: rain
+      binarize_mask: true
+      type_norm: img
+    mse_rain_B1_N0:
+      type: calculate_mse_derain
+      target: rain
+      binarize_mask: true
+      type_norm: null
+    mse_bg_B0_Nimg:
+      type: calculate_mse_derain
+      target: bg
+      binarize_mask: false
+      type_norm: img
+    mse_bg_B0_N0:
+      type: calculate_mse_derain
+      target: bg
+      binarize_mask: false
+      type_norm: null
+    mse_bg_B1_Nimg:
+      type: calculate_mse_derain
+      target: bg
+      binarize_mask: true
+      type_norm: img
+    mse_bg_B1_N0:
+      type: calculate_mse_derain
+      target: bg
+      binarize_mask: true
+      type_norm: null
 
 # logging settings
 logger:
