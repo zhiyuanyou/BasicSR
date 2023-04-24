@@ -186,8 +186,8 @@ def train_pipeline(root_path):
                 model.save(epoch, current_iter)
 
             # validation
-            if opt.get('val') is not None and (current_iter % opt['val']['val_freq']
-                                               == 0) or current_iter == opt['val']['val_first']:
+            if opt.get('val') is not None and ((current_iter % opt['val']['val_freq'] == 0)
+                                               or current_iter == opt['val']['val_first']):
                 if len(val_loaders) > 1:
                     logger.warning('Multiple validation datasets are *only* supported by SRModel.')
                 for val_loader in val_loaders:
