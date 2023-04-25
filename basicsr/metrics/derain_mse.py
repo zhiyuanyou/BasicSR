@@ -42,6 +42,7 @@ def calculate_mse_derain(img, img2, mask, target, binarize_mask, type_norm, inpu
 
     if type_norm == "bg":
         # use background as norm
+        assert target == "rain", "target must be rain for bg norm"
         norm = np.sum((img - img2)**2 * (1 - mask)) / np.sum(1 - mask)
     elif type_norm == "img":
         # use image as norm
