@@ -28,6 +28,10 @@ def calculate_mse_derain(img, img2, mask, target, binarize_mask, type_norm, inpu
     img2 = reorder_image(img2, input_order=input_order)
     mask = reorder_image(mask, input_order=input_order)
 
+    img = img.astype(np.float64)
+    img2 = img2.astype(np.float64)
+    mask = mask.astype(np.float64)
+
     if binarize_mask:
         mask[mask != 0] = 1
     else:
