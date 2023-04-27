@@ -1,5 +1,5 @@
 # general settings
-name: val_SwinIR_derain_scratch_REAL_{iter}_P128B8
+name: iter{iter}
 model_type: SwinIRModel
 scale: 1
 num_gpu: 1
@@ -35,13 +35,14 @@ network_g:
 
 # path
 path:
-  pretrain_network_g: ./train_SwinIR_derain_scratch_DIV2K_250k_P128B8/models/net_g_{iter}.pth
+  pretrain_network_g: ./train_SwinIR_derain_scratch_DIV2K_120k_P128B8/models/net_g_{iter}.pth
   strict_load_g: true
   resume_state: ~
-  results_root: ./
+  results_root: ./val_SwinIR_derain_scratch_REAL_P128B8
 
 # validation settings
 val:
+  val_first: !!float 1e3
   val_freq: !!float 5e3
   save_img: true
   suffix: res
@@ -55,6 +56,7 @@ val:
 # logging settings
 logger:
   print_freq: 100
+  save_first: !!float 1e3
   save_checkpoint_freq: !!float 5e3
   use_tb_logger: true
   wandb:

@@ -8,20 +8,17 @@ manual_seed: 131
 # dataset and data loader settings
 datasets:
   val:
-    name: DIV2K
+    name: DIV2KRain100L
     type: DerainDataset
     dataroot_gt: ../../datasets/DIV2K/DIV2K_valid_HR/
+    dataroot_lq: ../../datasets/DIV2K/DIV2K_valid_HR_Rain100L/
+    dataroot_mask: ../../datasets/DIV2K/DIV2K_valid_HR_Rain100L_mask/
     vis_lq:
       suffix: lq
     io_backend:
       type: disk
     # resize & transforms
     resize: 1024
-    # rain generator
-    add_rain_cfg:
-      rain_prob: 1.0
-      rain_types: [small, medium, large, random]
-      beta: [0.7, 1.0]
 
 # network structures
 network_g:
@@ -44,7 +41,7 @@ path:
   param_key_g: params_ema
   strict_load_g: true
   resume_state: ~
-  results_root: ./val_SwinIR_derain_scratch_DIV2K_P128B8
+  results_root: ./val_SwinIR_derain_scratch_DIV2KRain100L_P128B8
 
 # validation settings
 val:
