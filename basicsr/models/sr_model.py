@@ -6,7 +6,7 @@ from tqdm import tqdm
 from basicsr.archs import build_network
 from basicsr.losses import build_loss
 from basicsr.metrics import calculate_metric
-from basicsr.utils import get_root_logger, imwrite, tensor2img
+from basicsr.utils import get_root_logger, imwrite, npwrite, tensor2img
 from basicsr.utils.registry import MODEL_REGISTRY
 from .base_model import BaseModel
 
@@ -179,11 +179,11 @@ class SRModel(BaseModel):
 
         self.output = output.mean(dim=0, keepdim=True)
 
-    def dist_validation(self, dataloader, current_iter, tb_logger, save_img):
+    def dist_validation(self, dataloader, current_iter, tb_logger, save_img, save_feat):
         if self.opt['rank'] == 0:
-            self.nondist_validation(dataloader, current_iter, tb_logger, save_img)
+            self.nondist_validation(dataloader, current_iter, tb_logger, save_img, save_feat)
 
-    def nondist_validation(self, dataloader, current_iter, tb_logger, save_img):
+    def nondist_validation(self, dataloader, current_iter, tb_logger, save_img, save_feat):
         dataset_name = dataloader.dataset.opt['name']
         with_metrics = self.opt['val'].get('metrics') is not None
         use_pbar = self.opt['val'].get('pbar', False)
@@ -222,6 +222,15 @@ class SRModel(BaseModel):
             del self.lq
             del self.output
             torch.cuda.empty_cache()
+
+            if save_feat and hasattr(self, 'feat'):
+                if not self.opt['is_train']:
+                    save_feat_path = osp.join(self.opt['path']['feature'], dataset_name, f'{img_name}_feat.npy')
+                    feat = self.feat.permute(0, 2, 3, 1).cpu().numpy()
+                    npwrite(feat, save_feat_path)
+                    if 'mask' in metric_data:
+                        save_img_path = osp.join(self.opt['path']['feature'], dataset_name, f'{img_name}_mask.png')
+                        imwrite(metric_data['mask'], save_img_path)
 
             if save_img:
                 if self.opt['is_train']:

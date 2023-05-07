@@ -153,6 +153,22 @@ def imwrite(img, file_path, params=None, auto_mkdir=True):
         raise IOError('Failed in writing images.')
 
 
+def npwrite(array, file_path, params=None, auto_mkdir=True):
+    """Write array to file.
+
+    Args:
+        array (ndarray): array to be written.
+        file_path (str): file path.
+        params (None or list): Same as numpy's :func:`save` interface.
+        auto_mkdir (bool): If the parent folder of `file_path` does not exist,
+            whether to create it automatically.
+    """
+    if auto_mkdir:
+        dir_name = os.path.abspath(os.path.dirname(file_path))
+        os.makedirs(dir_name, exist_ok=True)
+    np.save(file_path, array, params)
+
+
 def crop_border(imgs, crop_border):
     """Crop borders of images.
 

@@ -190,6 +190,7 @@ def parse_options(root_path, is_train=True):
         opt['path']['results_root'] = results_root
         opt['path']['log'] = results_root
         opt['path']['visualization'] = osp.join(results_root, 'visualization')
+        opt['path']['feature'] = osp.join(results_root, 'feature')
 
     # datasets
     for phase, dataset in opt['datasets'].items():
