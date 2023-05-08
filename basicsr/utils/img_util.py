@@ -2,6 +2,7 @@ import cv2
 import math
 import numpy as np
 import os
+import random
 import torch
 from torchvision.utils import make_grid
 
@@ -153,20 +154,41 @@ def imwrite(img, file_path, params=None, auto_mkdir=True):
         raise IOError('Failed in writing images.')
 
 
-def npwrite(array, file_path, params=None, auto_mkdir=True):
+def npwrite(array, mask, dir_name, img_name, opt_save_feat, params=None, auto_mkdir=True):
     """Write array to file.
 
     Args:
         array (ndarray): array to be written.
-        file_path (str): file path.
+        mask (ndarray): mask to filter array.
+        dir_name (str): dir name.
+        img_name (str): img name.
+        opt_save_feat: opt for saving feature.
         params (None or list): Same as numpy's :func:`save` interface.
         auto_mkdir (bool): If the parent folder of `file_path` does not exist,
             whether to create it automatically.
     """
+    array = array.squeeze(0)  # h x w x c
+    mask = mask[:, :, 0]  # h x w
+
     if auto_mkdir:
-        dir_name = os.path.abspath(os.path.dirname(file_path))
         os.makedirs(dir_name, exist_ok=True)
-    np.save(file_path, array, params)
+    for opt in opt_save_feat:
+        method = opt['method']
+        mask_thresholds = opt['mask_thresholds']
+        num_sample = opt.get('num_sample', None)
+        for mask_threshold in mask_thresholds:
+            file_path = os.path.join(dir_name, f'{img_name}_{method}_{mask_threshold}.npy')
+            if method == 'mean':
+                out = array[mask > mask_threshold].mean(axis=0, keepdims=True)
+            elif method == 'sample':
+                num_valid = np.sum(mask > mask_threshold)
+                num_sample = num_sample if num_sample <= num_valid else num_valid
+                out = random.sample(list(array[mask > mask_threshold]), num_sample)
+                out = [_[None, :] for _ in out]
+                out = np.concatenate(out, axis=0)
+            else:
+                raise NotImplementedError
+            np.save(file_path, out, params)
 
 
 def crop_border(imgs, crop_border):

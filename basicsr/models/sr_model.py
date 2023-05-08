@@ -225,12 +225,10 @@ class SRModel(BaseModel):
 
             if save_feat and hasattr(self, 'feat'):
                 if not self.opt['is_train']:
-                    save_feat_path = osp.join(self.opt['path']['feature'], dataset_name, f'{img_name}_feat.npy')
+                    save_feat_dir = osp.join(self.opt['path']['feature'], dataset_name)
                     feat = self.feat.permute(0, 2, 3, 1).cpu().numpy()
-                    npwrite(feat, save_feat_path)
-                    if 'mask' in metric_data:
-                        save_img_path = osp.join(self.opt['path']['feature'], dataset_name, f'{img_name}_mask.png')
-                        imwrite(metric_data['mask'], save_img_path)
+                    mask = metric_data['mask']
+                    npwrite(feat, mask, save_feat_dir, img_name, save_feat)
 
             if save_img:
                 if self.opt['is_train']:
