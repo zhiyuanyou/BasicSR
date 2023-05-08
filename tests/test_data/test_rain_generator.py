@@ -5,14 +5,14 @@ import os
 from basicsr.data.derain_util import RainGenerator
 
 if __name__ == "__main__":
-    num_img = 2
+    num_img = 10
     save_dir = "./temp_test_dir"
     os.makedirs(save_dir, exist_ok=True)
     img = cv2.imread("../data/div2k_0390.png")
 
     for rain_type in ["small", "medium", "large", "random"]:
         for idx in range(num_img):
-            beta = np.random.uniform(0.6, 1)
+            beta = np.random.uniform(0.7, 1)
             beta = np.round(beta, 2)
             rain_generator = RainGenerator([rain_type], [beta, beta])
             rain, img_rain = rain_generator(img)

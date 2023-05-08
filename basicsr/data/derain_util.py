@@ -15,22 +15,22 @@ class RainGenerator:
         "medium": {
             "amount": [0.005, 0.007],
             "width": [3, 5, 7],
-            "prob": [0.3, 0.4, 0.3],
-            "length": [30, 45],
+            "prob": [0.25, 0.5, 0.25],
+            "length": [35, 45],
             "angle": [-30, 30],
         },
         "large": {
             "amount": [0.008, 0.010],
             "width": [7, 9],
             "prob": [0.5, 0.5],
-            "length": [40, 60],
+            "length": [45, 55],
             "angle": [-60, 60],
         },
         "random": {
             "amount": [0.002, 0.010],
             "width": [1, 3, 5, 7, 9],
             "prob": [0.2, 0.2, 0.2, 0.2, 0.2],
-            "length": [25, 60],
+            "length": [25, 55],
             "angle": [-60, 60],
         },
     }
