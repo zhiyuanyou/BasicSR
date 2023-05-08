@@ -167,11 +167,10 @@ def npwrite(array, mask, dir_name, img_name, opt_save_feat, params=None, auto_mk
         auto_mkdir (bool): If the parent folder of `file_path` does not exist,
             whether to create it automatically.
     """
-    array = array.squeeze(0)  # h x w x c
-    mask = mask[:, :, 0]  # h x w
-
     if auto_mkdir:
         os.makedirs(dir_name, exist_ok=True)
+    array = array.squeeze(0)  # h x w x c
+    mask = mask[:, :, 0]  # h x w
     for opt in opt_save_feat:
         method = opt['method']
         mask_thresholds = opt['mask_thresholds']
