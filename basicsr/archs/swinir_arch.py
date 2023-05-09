@@ -923,6 +923,8 @@ class SwinIR(nn.Module):
 
         x = x / self.img_range + self.mean
 
+        if self.training:
+            return x
         return x, feat
 
     def flops(self):
