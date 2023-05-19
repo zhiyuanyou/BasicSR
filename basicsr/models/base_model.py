@@ -17,6 +17,7 @@ class BaseModel():
         self.opt = opt
         self.device = torch.device('cuda' if opt['num_gpu'] != 0 else 'cpu')
         self.is_train = opt['is_train']
+        self.only_save_last = opt.get('only_save_last', None)
         self.schedulers = []
         self.optimizers = []
 
@@ -251,6 +252,10 @@ class BaseModel():
         if retry == 0:
             logger.warning(f'Still cannot save {save_path}. Just ignore it.')
             # raise IOError(f'Cannot save {save_path}.')
+        if self.only_save_last:
+            model_paths = scandir(self.opt['path']['models'], full_path=True)
+            for del_path in (set(model_paths) - set([save_path])):
+                os.remove(del_path)
 
     def _print_different_keys_loading(self, crt_net, load_net, strict=True):
         """Print keys with different name or different size when loading models.
