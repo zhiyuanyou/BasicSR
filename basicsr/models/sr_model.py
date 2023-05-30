@@ -6,7 +6,7 @@ from tqdm import tqdm
 from basicsr.archs import build_network
 from basicsr.losses import build_loss
 from basicsr.metrics import calculate_metric
-from basicsr.utils import get_root_logger, imwrite, npwrite, tensor2img
+from basicsr.utils import get_root_logger, imwrite, write_feats, tensor2img
 from basicsr.utils.registry import MODEL_REGISTRY
 from .base_model import BaseModel
 
@@ -223,12 +223,13 @@ class SRModel(BaseModel):
             del self.output
             torch.cuda.empty_cache()
 
-            if save_feat and hasattr(self, 'feat'):
+            if save_feat and hasattr(self, 'feats'):
                 if not self.opt['is_train']:
                     save_feat_dir = osp.join(self.opt['path']['feature'], dataset_name)
-                    feat = self.feat.permute(0, 2, 3, 1).cpu().numpy()
+                    for k in self.feats:
+                        self.feats[k] = self.feats[k].permute(0, 2, 3, 1).cpu().numpy()
                     mask = metric_data['mask']
-                    npwrite(feat, mask, save_feat_dir, img_name, save_feat)
+                    write_feats(self.feats, mask, save_feat_dir, img_name, save_feat)
 
             if save_img:
                 if self.opt['is_train']:

@@ -154,40 +154,66 @@ def imwrite(img, file_path, params=None, auto_mkdir=True):
         raise IOError('Failed in writing images.')
 
 
-def npwrite(array, mask, dir_name, img_name, opt_save_feat, params=None, auto_mkdir=True):
-    """Write array to file.
+def write_feats(feats, mask, dir_name, img_name, opt_save_feat, **kwargs):
+    """Write features to file.
 
     Args:
-        array (ndarray): array to be written.
+        feats (dict): features to be written.
+        mask (ndarray): mask to filter features.
+        dir_name (str): dir name.
+        img_name (str): img name.
+        opt_save_feat (dict): opt for saving feature.
+    """
+    for layer in feats:
+        feat = feats[layer]
+        write_feat(feat, mask, dir_name, img_name, opt_save_feat, layer, **kwargs)
+
+
+def write_feat(array, mask, dir_name, img_name, opt_save_feat, layer, params=None):
+    """Write feature to file.
+
+    Args:
+        array (ndarray): feature to be written.
         mask (ndarray): mask to filter array.
         dir_name (str): dir name.
         img_name (str): img name.
-        opt_save_feat: opt for saving feature.
+        opt_save_feat (dict): opt for saving feature.
+        layer (str): layer of feature.
         params (None or list): Same as numpy's :func:`save` interface.
-        auto_mkdir (bool): If the parent folder of `file_path` does not exist,
-            whether to create it automatically.
     """
-    if auto_mkdir:
-        os.makedirs(dir_name, exist_ok=True)
+
     array = array.squeeze(0)  # h x w x c
     mask = mask[:, :, 0]  # h x w
     for opt in opt_save_feat:
         method = opt['method']
-        mask_thresholds = opt['mask_thresholds']
+        thresholds_rain = opt['thresholds_rain']
+        thresholds_bg = opt['thresholds_bg']
         num_sample = opt.get('num_sample', None)
-        for mask_threshold in mask_thresholds:
-            file_path = os.path.join(dir_name, f'{img_name}_{method}_{mask_threshold}.npy')
+        for threshold_rain, threshold_bg in zip(thresholds_rain, thresholds_bg):
+            filepath_rain = os.path.join(dir_name, method, layer,
+                                         f'{img_name}_{threshold_rain}_{threshold_bg}_rain.npy')
+            filepath_bg = os.path.join(dir_name, method, layer, f'{img_name}_{threshold_rain}_{threshold_bg}_bg.npy')
+            os.makedirs(os.path.join(dir_name, method, layer), exist_ok=True)
+
             if method == 'mean':
-                out = array[mask > mask_threshold].mean(axis=0, keepdims=True)
+                rain = array[mask > threshold_rain].mean(axis=0, keepdims=True)
+                bg = array[mask < threshold_bg].mean(axis=0, keepdims=True)
             elif method == 'sample':
-                num_valid = np.sum(mask > mask_threshold)
+                num_valid = np.sum(mask > threshold_rain)
                 num_sample = num_sample if num_sample <= num_valid else num_valid
-                out = random.sample(list(array[mask > mask_threshold]), num_sample)
-                out = [_[None, :] for _ in out]
-                out = np.concatenate(out, axis=0)
+                rain = random.sample(list(array[mask > threshold_rain]), num_sample)
+                rain = [_[None, :] for _ in rain]
+                rain = np.concatenate(rain, axis=0)
+
+                num_valid = np.sum(mask < threshold_bg)
+                num_sample = num_sample if num_sample <= num_valid else num_valid
+                bg = random.sample(list(array[mask < threshold_bg]), num_sample)
+                bg = [_[None, :] for _ in bg]
+                bg = np.concatenate(bg, axis=0)
             else:
                 raise NotImplementedError
-            np.save(file_path, out, params)
+            np.save(filepath_rain, rain, params)
+            np.save(filepath_bg, bg, params)
 
 
 def crop_border(imgs, crop_border):

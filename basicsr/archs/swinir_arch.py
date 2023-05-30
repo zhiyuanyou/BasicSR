@@ -874,19 +874,27 @@ class SwinIR(nn.Module):
         return {'relative_position_bias_table'}
 
     def forward_features(self, x):
+        def unembed(x):
+            b, n, c = x.shape
+            h = int(math.sqrt(n))
+            w = n // h
+            return x.transpose(1, 2).view(b, c, h, w)
+
         x_size = (x.shape[2], x.shape[3])
         x = self.patch_embed(x)
         if self.ape:
             x = x + self.absolute_pos_embed
         x = self.pos_drop(x)
 
-        for layer in self.layers:
+        feats = {'layer0': unembed(x)}
+        for idx, layer in enumerate(self.layers):
             x = layer(x, x_size)
+            feats[f'layer{idx + 1}'] = unembed(x)
 
         x = self.norm(x)  # b seq_len c
         x = self.patch_unembed(x, x_size)
 
-        return x
+        return x, feats
 
     def forward(self, x):
         self.mean = self.mean.type_as(x)
@@ -895,37 +903,41 @@ class SwinIR(nn.Module):
         if self.upsampler == 'pixelshuffle':
             # for classical SR
             x = self.conv_first(x)
-            feat = self.conv_after_body(self.forward_features(x))
-            x = feat + x
+            res, feats = self.forward_features(x)
+            x = x + self.conv_after_body(res)
             x = self.conv_before_upsample(x)
+            feats["before_upsample"] = x
             x = self.conv_last(self.upsample(x))
         elif self.upsampler == 'pixelshuffledirect':
             # for lightweight SR
             x = self.conv_first(x)
-            feat = self.conv_after_body(self.forward_features(x))
-            x = feat + x
+            res, feats = self.forward_features(x)
+            x = x + self.conv_after_body(res)
+            feats["before_upsample"] = x
             x = self.upsample(x)
         elif self.upsampler == 'nearest+conv':
             # for real-world SR
             x = self.conv_first(x)
-            feat = self.conv_after_body(self.forward_features(x))
-            x = feat + x
+            res, feats = self.forward_features(x)
+            x = x + self.conv_after_body(res)
             x = self.conv_before_upsample(x)
+            feats["before_upsample"] = x
             x = self.lrelu(self.conv_up1(torch.nn.functional.interpolate(x, scale_factor=2, mode='nearest')))
             x = self.lrelu(self.conv_up2(torch.nn.functional.interpolate(x, scale_factor=2, mode='nearest')))
             x = self.conv_last(self.lrelu(self.conv_hr(x)))
         else:
             # for image denoising and JPEG compression artifact reduction
             x_first = self.conv_first(x)
-            feat = self.conv_after_body(self.forward_features(x_first))
-            res = feat + x_first
+            res, feats = self.forward_features(x_first)
+            res = x_first + self.conv_after_body(res)
+            feats["before_upsample"] = res
             x = x + self.conv_last(res)
 
         x = x / self.img_range + self.mean
 
         if self.training:
             return x
-        return x, feat
+        return x, feats
 
     def flops(self):
         flops = 0
