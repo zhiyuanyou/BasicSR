@@ -190,10 +190,11 @@ def write_feat(array, mask, dir_name, img_name, opt_save_feat, layer, params=Non
         thresholds_bg = opt['thresholds_bg']
         num_sample = opt.get('num_sample', None)
         for threshold_rain, threshold_bg in zip(thresholds_rain, thresholds_bg):
-            filepath_rain = os.path.join(dir_name, method, layer,
-                                         f'{img_name}_{threshold_rain}_{threshold_bg}_rain.npy')
-            filepath_bg = os.path.join(dir_name, method, layer, f'{img_name}_{threshold_rain}_{threshold_bg}_bg.npy')
-            os.makedirs(os.path.join(dir_name, method, layer), exist_ok=True)
+            subdir_name = f'{method}_{threshold_rain}_{threshold_bg}'
+            filepath_rain = os.path.join(dir_name, subdir_name, layer,
+                                         f'{img_name}_rain.npy')
+            filepath_bg = os.path.join(dir_name, subdir_name, layer, f'{img_name}_bg.npy')
+            os.makedirs(os.path.join(dir_name, subdir_name, layer), exist_ok=True)
 
             if method == 'mean':
                 rain = array[mask > threshold_rain].mean(axis=0, keepdims=True)

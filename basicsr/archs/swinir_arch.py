@@ -874,11 +874,9 @@ class SwinIR(nn.Module):
         return {'relative_position_bias_table'}
 
     def forward_features(self, x):
-        def unembed(x):
+        def unembed(x, x_size):
             b, n, c = x.shape
-            h = int(math.sqrt(n))
-            w = n // h
-            return x.transpose(1, 2).view(b, c, h, w)
+            return x.transpose(1, 2).view(b, c, x_size[0], x_size[1])
 
         x_size = (x.shape[2], x.shape[3])
         x = self.patch_embed(x)
@@ -886,10 +884,10 @@ class SwinIR(nn.Module):
             x = x + self.absolute_pos_embed
         x = self.pos_drop(x)
 
-        feats = {'layer0': unembed(x)}
+        feats = {'layer0': unembed(x, x_size)}
         for idx, layer in enumerate(self.layers):
             x = layer(x, x_size)
-            feats[f'layer{idx + 1}'] = unembed(x)
+            feats[f'layer{idx + 1}'] = unembed(x, x_size)
 
         x = self.norm(x)  # b seq_len c
         x = self.patch_unembed(x, x_size)
