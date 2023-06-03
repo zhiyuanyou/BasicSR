@@ -54,11 +54,14 @@ class DerainDataset(data.Dataset):
 
         if self.add_rain_cfg:
             assert self.lq_folder is None, "lq_folder is not None, no need add rain"
-            self.rain_generator = RainGenerator(self.add_rain_cfg["rain_types"], self.add_rain_cfg["beta"])
+            beta = self.add_rain_cfg["beta"]
+            rain_types = self.add_rain_cfg.get("rain_types", None)
+            rain_cfg = self.add_rain_cfg.get("rain_cfg", None)
+            self.rain_generator = RainGenerator(beta, rain_types, rain_cfg)
             logger = get_root_logger()
             logger.info(f"generate rain with prob: {self.add_rain_cfg['rain_prob']}")
             logger.info(
-                f"rain_generator with types: {self.add_rain_cfg['rain_types']}, beta: {self.add_rain_cfg['beta']}")
+                f"rain_generator with types: {rain_types} or cfg: {rain_cfg}, beta: {self.add_rain_cfg['beta']}")
 
     def __getitem__(self, index):
         # keep added rain same for different iterations

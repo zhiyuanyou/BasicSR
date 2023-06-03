@@ -35,14 +35,20 @@ class RainGenerator:
         },
     }
 
-    def __init__(self, rain_types, beta):
+    def __init__(self, beta, rain_types=None, rain_cfg=None):
         self.rain_types = rain_types
+        self.rain_cfg = rain_cfg
         self.beta = beta
 
     def __call__(self, img):
-        rain_type = random.choice(self.rain_types)
+        if self.rain_types:
+            assert self.rain_cfg is None, "rain_cfg must be null as rain_types are given"
+            rain_type = random.choice(self.rain_types)
+        else:
+            assert self.rain_cfg, "rain_cfg must be given as rain_types are null"
+            rain_type = None
         beta = np.random.uniform(self.beta[0], self.beta[1])
-        rain, img_rain = self.add_rain(img, rain_type, beta)
+        rain, img_rain = self.add_rain(img, beta, rain_type, self.rain_cfg)
         return rain, img_rain
 
     def get_noise(self, img, amount):
@@ -95,7 +101,7 @@ class RainGenerator:
 
         return blurred
 
-    def add_rain(self, img, rain_type, beta):
+    def add_rain(self, img, beta, rain_type, rain_cfg):
         """
         在一张图像中加入雨
         >>> 输入:
@@ -106,8 +112,9 @@ class RainGenerator:
             rain: 雨图
             img_rain: 带雨的图像
         """
-
-        rain_cfg = self.rain_cfg_dict[rain_type]
+        if rain_type:
+            assert rain_cfg is None, "rain_cfg must be null as rain_type is given"
+            rain_cfg = self.rain_cfg_dict[rain_type]
         amount = rain_cfg["amount"]
         width = rain_cfg["width"]
         prob = rain_cfg["prob"]
