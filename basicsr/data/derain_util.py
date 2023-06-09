@@ -83,7 +83,7 @@ class RainGenerator:
         """
 
         # 由于对角阵自带45度的倾斜，逆时针为正，所以加了-45度的误差，保证开始为正
-        trans = cv2.getRotationMatrix2D((length / 2, length / 2), angle - 45, 1)
+        trans = cv2.getRotationMatrix2D(((length - 1) / 2, (length - 1) / 2), angle - 45, 1)
         dig = np.diag(np.ones(length))  # 生成对焦矩阵
         k = cv2.warpAffine(dig, trans, (length, length))  # 生成模糊核
         k = cv2.GaussianBlur(k, (width, width), 0)  # 高斯模糊这个旋转后的对角核，使得雨有宽度
