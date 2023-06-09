@@ -119,7 +119,12 @@ class RainGenerator:
         width = rain_cfg["width"]
         prob = rain_cfg["prob"]
         length = rain_cfg["length"]
+        # for angle:
+        # option 1: [lower, upper]
+        # option 2: [[lower1, upper1], [lower2, upper2], ...]
         angle = rain_cfg["angle"]
+        if isinstance(angle[0], list):
+            angle = random.choice(angle)
 
         amount = np.random.uniform(amount[0], amount[1])  # 雨线数目, [0, 1]
         width = np.random.choice(width, p=prob)  # 粗细
