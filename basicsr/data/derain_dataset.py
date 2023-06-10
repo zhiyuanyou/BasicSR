@@ -3,6 +3,7 @@ import os.path as osp
 import torch.utils.data as data
 from torchvision.transforms.functional import normalize
 
+from basicsr.data.degradations import random_add_gaussian_noise, random_add_poisson_noise
 from basicsr.data.derain_util import RainGenerator, set_val_seed
 from basicsr.data.transforms import augment
 from basicsr.data.transforms_derain import paired_random_crop_with_mask, paired_resize
@@ -25,6 +26,7 @@ class DerainDataset(data.Dataset):
         self.io_backend_opt = opt["io_backend"]
         self.mean = opt.get("mean", None)
         self.std = opt.get("std", None)
+        self.add_noise_cfg = opt.get("add_noise_cfg", None)
         self.add_rain_cfg = opt.get("add_rain_cfg", None)
         self.vis_lq = opt.get("vis_lq", None)
 
@@ -96,10 +98,22 @@ class DerainDataset(data.Dataset):
         # resize
         img_gt, img_lq, rain = paired_resize(img_gt, img_lq, rain, self.opt["resize"])
 
+        # add noise
+        if self.add_noise_cfg:
+            if np.random.uniform() < self.add_noise_cfg["noise_prob"]:
+                img_lq = (img_lq / 255.).astype(np.float32)
+                if self.add_noise_cfg["noise_type"] == "gaussian":
+                    # kwargs: sigma_range: [1, 15], gray_prob: 0.5
+                    img_lq = random_add_gaussian_noise(img_lq, **self.add_noise_cfg["kwargs"])
+                elif self.add_noise_cfg["noise_type"] == "poisson":
+                    # kwargs: scale_range: [0.05, 1.], gray_prob: 0.5
+                    img_lq = random_add_poisson_noise(img_lq, **self.add_noise_cfg["kwargs"])
+                img_lq = (img_lq * 255.).astype(np.uint8)
+
         # add rain
         if self.add_rain_cfg:
             if np.random.uniform() < self.add_rain_cfg["rain_prob"]:
-                rain, img_lq = self.rain_generator(img_gt)
+                rain, img_lq = self.rain_generator(img_lq)
 
         if self.opt["phase"] == "train":
             crop_size = self.opt["crop_size"]

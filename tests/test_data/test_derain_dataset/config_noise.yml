@@ -1,0 +1,51 @@
+# general settings
+scale: 1
+manual_seed: 131
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: DIV2K
+    type: DerainDataset
+    dataroot_gt: /opt/data/private/142/datasets_bk/DIV2K/DIV2K_train_HR/
+    io_backend:
+      type: disk
+    num_img: 16
+    # resize & transforms
+    resize: 1024
+    crop_size: 256
+    use_hflip: true
+    use_rot: false
+    # add noise
+    add_noise_cfg:
+      noise_prob: 1.0
+      noise_type: gaussian
+      kwargs:
+        sigma_range: [1, 15]
+        gray_prob: 0.5
+      # noise_type: poisson
+      # kwargs:
+      #   scale_range: [0.05, 1.]
+      #   gray_prob: 0.5
+    # rain generator
+    add_rain_cfg:
+      rain_prob: 0.9
+      rain_types: [small, medium, large, random]
+      beta: [0.7, 1.0]
+
+    # data loader
+    num_worker_per_gpu: 6
+    batch_size_per_gpu: 8
+    dataset_enlarge_ratio: 1
+    prefetch_mode: ~
+
+  val:
+    name: Rain100L
+    type: DerainDataset
+    dataroot_gt: /opt/data/private/142/datasets_bk/Rain100L/rain100l_test/rain_100_gt/
+    dataroot_lq: /opt/data/private/142/datasets_bk/Rain100L/rain100l_test/rain_100_input/
+    dataroot_mask: /opt/data/private/142/datasets_bk/Rain100L/rain100l_test/rain100l_mask_id/
+    io_backend:
+      type: disk
+    # resize & transforms
+    resize: 1024
