@@ -101,3 +101,33 @@ def paired_resize(img_gt, img_lq, mask, resize, resize_small=False):
         img_lq = np.array(Image.fromarray(img_lq).resize((w_new, h_new), Image.Resampling.BICUBIC))
         mask = np.array(Image.fromarray(mask).resize((w_new, h_new), Image.Resampling.BICUBIC))
     return img_gt, img_lq, mask
+
+
+def random_cutout(img, n_holes, cutout_ratio_h, cutout_ratio_w, fill_in=(0, 0, 0)):
+    """
+    Args:
+        img (ndarray): image.
+        n_holes (int | List[int, int]): number of holes.
+        cutout_ratio_h (List[float, float]): cutout ratio of height.
+        cutout_ratio_w (List[float, float]): cutout ratio of width.
+        fill_in (Tuple[float, float, float] | Tuple[int, int, int] = (0, 0, 0)): fill in value.
+
+    Returns:
+        ndarray: result image.
+    """
+
+    if isinstance(n_holes, int):
+        n_holes = [n_holes, n_holes]
+    h, w, _ = img.shape
+    n_holes = np.random.randint(n_holes[0], n_holes[1] + 1)
+    for _ in range(n_holes):
+        ratio_h = np.random.uniform(cutout_ratio_h[0], cutout_ratio_h[1])
+        ratio_w = np.random.uniform(cutout_ratio_w[0], cutout_ratio_w[1])
+        cutout_h = int(ratio_h * h)
+        cutout_w = int(ratio_w * w)
+        x1 = np.random.randint(0, w - cutout_w)
+        y1 = np.random.randint(0, h - cutout_h)
+        x2 = np.clip(x1 + cutout_w, 0, w)
+        y2 = np.clip(y1 + cutout_h, 0, h)
+        img[y1:y2, x1:x2, :] = fill_in
+    return img

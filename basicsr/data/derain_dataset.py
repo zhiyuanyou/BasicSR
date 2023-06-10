@@ -6,7 +6,7 @@ from torchvision.transforms.functional import normalize
 from basicsr.data.degradations import random_add_gaussian_noise, random_add_poisson_noise
 from basicsr.data.derain_util import RainGenerator, set_val_seed
 from basicsr.data.transforms import augment
-from basicsr.data.transforms_derain import paired_random_crop_with_mask, paired_resize
+from basicsr.data.transforms_derain import paired_random_crop_with_mask, paired_resize, random_cutout
 from basicsr.utils import FileClient, get_root_logger, imfrombytes, img2tensor, imwrite, scandir
 from basicsr.utils.registry import DATASET_REGISTRY
 
@@ -27,6 +27,7 @@ class DerainDataset(data.Dataset):
         self.mean = opt.get("mean", None)
         self.std = opt.get("std", None)
         self.add_noise_cfg = opt.get("add_noise_cfg", None)
+        self.cutout_cfg = opt.get("cutout_cfg", None)
         self.add_rain_cfg = opt.get("add_rain_cfg", None)
         self.vis_lq = opt.get("vis_lq", None)
 
@@ -98,6 +99,15 @@ class DerainDataset(data.Dataset):
         # resize
         img_gt, img_lq, rain = paired_resize(img_gt, img_lq, rain, self.opt["resize"])
 
+        if self.opt["phase"] == "train":
+            crop_size = self.opt["crop_size"]
+            # random crop
+            img_gt, rain, img_lq = paired_random_crop_with_mask(img_gt, rain, img_lq, crop_size, scale, gt_path)
+            # flip, rotation
+            use_flip = self.opt.get("use_flip", False)
+            use_rot = self.opt.get("use_rot", False)
+            img_gt, rain, img_lq = augment([img_gt, rain, img_lq], use_flip, use_rot)
+
         # add noise
         if self.add_noise_cfg:
             if np.random.uniform() < self.add_noise_cfg["noise_prob"]:
@@ -110,19 +120,16 @@ class DerainDataset(data.Dataset):
                     img_lq = random_add_poisson_noise(img_lq, **self.add_noise_cfg["kwargs"])
                 img_lq = (img_lq * 255.).astype(np.uint8)
 
+        # cutout
+        if self.cutout_cfg:
+            if np.random.uniform() < self.cutout_cfg["cutout_prob"]:
+                # kwargs: n_holes: [1, 2], cutout_ratio_h: [0.2, 0.3], cutout_ratio_w: [0.2, 0.3]
+                img_lq = random_cutout(img_lq, **self.cutout_cfg["kwargs"])
+
         # add rain
         if self.add_rain_cfg:
             if np.random.uniform() < self.add_rain_cfg["rain_prob"]:
                 rain, img_lq = self.rain_generator(img_lq)
-
-        if self.opt["phase"] == "train":
-            crop_size = self.opt["crop_size"]
-            # random crop
-            img_gt, rain, img_lq = paired_random_crop_with_mask(img_gt, rain, img_lq, crop_size, scale, gt_path)
-            # flip, rotation
-            use_flip = self.opt.get("use_flip", False)
-            use_rot = self.opt.get("use_rot", False)
-            img_gt, rain, img_lq = augment([img_gt, rain, img_lq], use_flip, use_rot)
 
         if self.vis_lq:
             img_name = osp.splitext(osp.basename(lq_path))[0]

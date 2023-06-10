@@ -27,6 +27,13 @@ datasets:
       # kwargs:
       #   scale_range: [0.05, 1.]
       #   gray_prob: 0.5
+    # cutout
+    cutout_cfg:
+      cutout_prob: 0.8
+      kwargs:
+        n_holes: [1, 2]
+        cutout_ratio_h: [0.2, 0.3]
+        cutout_ratio_w: [0.2, 0.3]
     # rain generator
     add_rain_cfg:
       rain_prob: 0.9
