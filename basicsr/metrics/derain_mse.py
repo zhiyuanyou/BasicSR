@@ -5,7 +5,7 @@ from basicsr.utils.registry import METRIC_REGISTRY
 
 
 @METRIC_REGISTRY.register()
-def calculate_mse_derain(img, img2, mask, target, binarize_mask, type_norm, input_order='HWC', **kwargs):
+def calculate_mse_derain(img, img2, mask, target, binarize_mask=True, type_norm=None, threshold_mask=50, threshold_bg=50, input_order='HWC', **kwargs):
     """
     Args:
         img (ndarray): Result images with range [0, 255].
@@ -14,6 +14,8 @@ def calculate_mse_derain(img, img2, mask, target, binarize_mask, type_norm, inpu
         target (str): Choices: [bg, rain]
         binarize_mask (bool): If True, binarize mask, else, rescale mask to [0,1].
         type_norm (str): Choices: [bg, img, None].
+        threshold_mask (int): threshold of mask.
+        threshold_bg (int): threshold of background.
         input_order (str): Whether the input order is 'HWC' or 'CHW'. Default: 'HWC'.
 
     Returns:
@@ -22,6 +24,7 @@ def calculate_mse_derain(img, img2, mask, target, binarize_mask, type_norm, inpu
 
     assert img.shape == img2.shape == mask.shape, (
         f'Image shapes are different: {img.shape}, {img2.shape}, {mask.shape}.')
+    assert threshold_mask >= threshold_bg, f"Threshold of mask ({threshold_mask}) must >= bg ({threshold_bg})"
     if input_order not in ['HWC', 'CHW']:
         raise ValueError(f'Wrong input_order {input_order}. Supported input_orders are "HWC" and "CHW"')
     img = reorder_image(img, input_order=input_order)
@@ -33,9 +36,10 @@ def calculate_mse_derain(img, img2, mask, target, binarize_mask, type_norm, inpu
     mask = mask.astype(np.float64)
 
     if binarize_mask:
-        mask[mask != 0] = 1
+        mask[mask <= threshold_bg] = 0
+        mask[mask > threshold_mask] = 1
     else:
-        mask = mask / 255
+        mask = mask / 255.
 
     if target == "bg":
         mask = 1 - mask
