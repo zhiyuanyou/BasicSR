@@ -6,7 +6,7 @@ from copy import deepcopy
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 
 from basicsr.models import lr_scheduler as lr_scheduler
-from basicsr.utils import get_root_logger
+from basicsr.utils import get_root_logger, scandir
 from basicsr.utils.dist_util import master_only
 
 
@@ -348,6 +348,9 @@ class BaseModel():
             if retry == 0:
                 logger.warning(f'Still cannot save {save_path}. Just ignore it.')
                 # raise IOError(f'Cannot save {save_path}.')
+            state_paths = scandir(self.opt['path']['training_states'], full_path=True)
+            for del_path in (set(state_paths) - set([save_path])):
+                os.remove(del_path)
 
     def resume_training(self, resume_state):
         """Reload the optimizers and schedulers for resumed training.
