@@ -76,10 +76,11 @@ class PairedImageDataset(data.Dataset):
         img_lq = imfrombytes(img_bytes, float32=True)
 
         # augmentation for training
-        if self.opt['phase'] == 'train':
+        if self.opt['phase'] == 'train' and self.opt.get('gt_size', None):
             gt_size = self.opt['gt_size']
             # random crop
             img_gt, img_lq = paired_random_crop(img_gt, img_lq, gt_size, scale, gt_path)
+        if self.opt['phase'] == 'train':
             # flip, rotation
             img_gt, img_lq = augment([img_gt, img_lq], self.opt['use_hflip'], self.opt['use_rot'])
 
