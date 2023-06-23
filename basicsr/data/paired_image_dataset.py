@@ -55,8 +55,9 @@ class PairedImageDataset(data.Dataset):
             self.io_backend_opt['client_keys'] = ['lq', 'gt']
             self.paths = paired_paths_from_lmdb([self.lq_folder, self.gt_folder], ['lq', 'gt'])
         elif 'meta_info_file' in self.opt and self.opt['meta_info_file'] is not None:
+            meta_with_dir = self.opt.get('meta_with_dir', None)
             self.paths = paired_paths_from_meta_info_file([self.lq_folder, self.gt_folder], ['lq', 'gt'],
-                                                          self.opt['meta_info_file'], self.filename_tmpl)
+                                                          self.opt['meta_info_file'], self.filename_tmpl, meta_with_dir)
         else:
             self.paths = paired_paths_from_folder([self.lq_folder, self.gt_folder], ['lq', 'gt'], self.filename_tmpl)
 

@@ -153,7 +153,7 @@ def paired_paths_from_lmdb(folders, keys):
         return paths
 
 
-def paired_paths_from_meta_info_file(folders, keys, meta_info_file, filename_tmpl):
+def paired_paths_from_meta_info_file(folders, keys, meta_info_file, filename_tmpl, meta_with_dir=False):
     """Generate paired paths from an meta information file.
 
     Each line in the meta information file contains the image names and
@@ -174,6 +174,7 @@ def paired_paths_from_meta_info_file(folders, keys, meta_info_file, filename_tmp
         filename_tmpl (str): Template for each filename. Note that the
             template excludes the file extension. Usually the filename_tmpl is
             for files in the input folder.
+        meta_with_dir (bool): Whether to keep dir info in meta_file.
 
     Returns:
         list[str]: Returned path list.
@@ -189,7 +190,10 @@ def paired_paths_from_meta_info_file(folders, keys, meta_info_file, filename_tmp
 
     paths = []
     for gt_name in gt_names:
-        basename, ext = osp.splitext(osp.basename(gt_name))
+        if meta_with_dir:
+            basename, ext = osp.splitext(gt_name)
+        else:
+            basename, ext = osp.splitext(osp.basename(gt_name))
         input_name = f'{filename_tmpl.format(basename)}{ext}'
         input_path = osp.join(input_folder, input_name)
         gt_path = osp.join(gt_folder, gt_name)

@@ -2,7 +2,7 @@
 # Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network
 
 # general settings
-name: !!str 1033685102
+name: infer_iter100k
 model_type: SRModel
 scale: 1
 num_gpu: 1  # set num_gpu: 0 for cpu mode
@@ -13,8 +13,10 @@ datasets:
   val:
     name: VIDEO
     type: PairedImageDataset
-    dataroot_gt: /opt/data/private/142/datasets_bk/demask/video-crop/1033685102
-    dataroot_lq: /opt/data/private/142/datasets_bk/demask/video-crop/1033685102
+    dataroot_gt: /opt/data/private/142/datasets_bk/demask/video-crop/
+    dataroot_lq: /opt/data/private/142/datasets_bk/demask/video-crop/
+    meta_info_file: /opt/data/private/142/BasicSR/experiments_watermark/check_data/infer.txt
+    meta_with_dir: true
     io_backend:
       type: disk
 
@@ -29,16 +31,17 @@ network_g:
 
 # path
 path:
-  pretrain_network_g: /opt/data/private/142/BasicSR/experiments/001_MSRResNet_DF2K_120k_B32_GPU4/models/net_g_20000.pth
+  pretrain_network_g: /opt/data/private/142/BasicSR/experiments/001_MSRResNet_DF2K_120k_B32_GPU4/models/net_g_100000.pth
   param_key_g: params_ema
   strict_load_g: true
   resume_state: ~
-  results_root: /opt/data/private/142/BasicSR/experiments/001_MSRResNet_DF2K_120k_B32_GPU4/infer_iter20k
+  results_root: /opt/data/private/142/BasicSR/experiments/001_MSRResNet_DF2K_120k_B32_GPU4
 
 # validation settings
 val:
   val_freq: !!float 5e3
   save_img: true
+  save_parent_dir: true
   suffix: res
   metrics:
     psnr: # metric name, can be arbitrary
