@@ -153,7 +153,7 @@ def paired_paths_from_lmdb(folders, keys):
         return paths
 
 
-def paired_paths_from_meta_info_file(folders, keys, meta_info_file, filename_tmpl, meta_with_dir=False):
+def paired_paths_from_meta_info_file(folders, keys, meta_info_file, filename_tmpl=None, meta_with_dir=False):
     """Generate paired paths from an meta information file.
 
     Each line in the meta information file contains the image names and
@@ -161,8 +161,9 @@ def paired_paths_from_meta_info_file(folders, keys, meta_info_file, filename_tmp
 
     Example of an meta information file:
     ```
-    0001_s001.png (480,480,3)
-    0001_s002.png (480,480,3)
+    lq_name (optional, gt_name)
+    0001_s001_lq.png (optional, 0001_s001_gt.png)
+    0001_s002_lq.png (optional, 0001_s002_gt.png)
     ```
 
     Args:
@@ -186,16 +187,29 @@ def paired_paths_from_meta_info_file(folders, keys, meta_info_file, filename_tmp
     input_key, gt_key = keys
 
     with open(meta_info_file, 'r') as fin:
-        gt_names = [line.strip().split(' ')[0] for line in fin]
+        lines = fin.readlines()
+
+    lq_names = []
+    gt_names = []
+    len_info = len(lines[0].strip().split(' '))
+    for line in lines:
+        if len_info == 1:
+            lq_name = line.strip().split(' ')[0]
+            gt_name = lq_name
+        elif len_info == 2:
+            lq_name = line.strip().split(' ')[0]
+            gt_name = line.strip().split(' ')[1]
+        else:
+            raise ValueError("meta info wrong!")
+        lq_names.append(lq_name)
+        gt_names.append(gt_name)
 
     paths = []
-    for gt_name in gt_names:
-        if meta_with_dir:
-            basename, ext = osp.splitext(gt_name)
-        else:
-            basename, ext = osp.splitext(osp.basename(gt_name))
-        input_name = f'{filename_tmpl.format(basename)}{ext}'
-        input_path = osp.join(input_folder, input_name)
+    for lq_name, gt_name in zip(lq_names, gt_names):
+        if not meta_with_dir:
+            lq_name = osp.basename(lq_name)
+            gt_name = osp.basename(gt_name)
+        input_path = osp.join(input_folder, lq_name)
         gt_path = osp.join(gt_folder, gt_name)
         paths.append(dict([(f'{input_key}_path', input_path), (f'{gt_key}_path', gt_path)]))
     return paths
