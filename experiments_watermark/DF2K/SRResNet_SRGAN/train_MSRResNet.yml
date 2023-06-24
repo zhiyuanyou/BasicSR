@@ -25,7 +25,7 @@ datasets:
       # (for lmdb)
       # type: lmdb
 
-    use_hflip: true
+    use_hflip: false
     use_rot: false
 
     # data loader
