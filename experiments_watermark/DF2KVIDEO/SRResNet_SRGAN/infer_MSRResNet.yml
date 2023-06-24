@@ -1,0 +1,64 @@
+# Modified SRResNet w/o BN from:
+# Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network
+
+# general settings
+name: infer_iter5k
+model_type: SRModel
+scale: 1
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+manual_seed: 0
+
+# dataset and data loader settings
+datasets:
+  val:
+    name: VIDEO
+    type: PairedImageDataset
+    dataroot_gt: /opt/data/private/142/datasets_bk/demask/video-crop/
+    dataroot_lq: /opt/data/private/142/datasets_bk/demask/video-crop/
+    meta_info_file: /opt/data/private/142/BasicSR/experiments_watermark/infer_data/infer.txt
+    meta_with_dir: true
+    io_backend:
+      type: disk
+
+# network structures
+network_g:
+  type: MSRResNet
+  num_in_ch: 3
+  num_out_ch: 3
+  num_feat: 64
+  num_block: 16
+  upscale: 1
+
+# path
+path:
+  pretrain_network_g: /opt/data/private/142/BasicSR/experiments/003_MSRResNet_DF2KVIDEO_120k_B32_GPU4/models/net_g_5000.pth
+  param_key_g: params_ema
+  strict_load_g: true
+  resume_state: ~
+  results_root: /opt/data/private/142/BasicSR/experiments/003_MSRResNet_DF2KVIDEO_120k_B32_GPU4
+
+# validation settings
+val:
+  val_freq: !!float 5e3
+  save_img: true
+  save_parent_dir: true
+  suffix: res
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 2
+      test_y_channel: false
+
+# logging settings
+logger:
+  print_freq: 100
+  save_checkpoint_freq: !!float 5e3
+  use_tb_logger: true
+  wandb:
+    project: ~
+    resume_id: ~
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 29500
