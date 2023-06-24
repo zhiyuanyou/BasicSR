@@ -15,7 +15,7 @@ datasets:
     type: PairedImageDataset
     dataroot_gt: /opt/data/private/142/datasets_bk/demask/video-crop/
     dataroot_lq: /opt/data/private/142/datasets_bk/demask/video-crop/
-    meta_info_file: /opt/data/private/142/BasicSR/experiments_watermark/DF2K/check_data/infer.txt
+    meta_info_file: /opt/data/private/142/BasicSR/experiments_watermark/infer_data/infer.txt
     meta_with_dir: true
     io_backend:
       type: disk
