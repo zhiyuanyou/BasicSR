@@ -12,7 +12,7 @@ datasets:
     type: PairedImageDataset
     dataroot_gt: /opt/data/share/xtkong/DF2K/GT_demask
     dataroot_lq: /opt/data/share/xtkong/DF2K/mask_demask
-    meta_info_file: /opt/data/private/142/BasicSR/experiments_watermark/check_data/train.txt
+    meta_info_file: /opt/data/private/142/BasicSR/experiments_watermark/DF2K/check_data/train.txt
     filename_tmpl: '{}'
     io_backend:
       type: disk
@@ -31,7 +31,7 @@ datasets:
     type: PairedImageDataset
     dataroot_gt: /opt/data/share/xtkong/DF2K/GT_demask
     dataroot_lq: /opt/data/share/xtkong/DF2K/mask_demask
-    meta_info_file: /opt/data/private/142/BasicSR/experiments_watermark/check_data/test.txt
+    meta_info_file: /opt/data/private/142/BasicSR/experiments_watermark/DF2K/check_data/test.txt
     io_backend:
       type: disk
 
