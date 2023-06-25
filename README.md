@@ -1,3 +1,40 @@
+## 去水印模型推理 ##
+
+1. 准备预训练模型
+   
+   从百度网盘下载[模型](https://pan.baidu.com/s/1w-Eeb3gJzJy7CL6ULMKdjA?pwd=bwd8)(提取码: bwd8), 将模型储存为 _/experiments/001_MSRResNet_DF2K_120k_B32_GPU4/models/net_g_5000.pth_. 
+
+2. 准备视频数据
+
+    将视频数据储存在 _/datasets/videos/_ 目录下, 格式为：
+
+   ```
+    |-- datasets
+        |-- videos
+            |-- name1.mp4
+            |-- name2.mp4
+            |-- ...
+    ```
+  
+3. 构建推理数据集
+
+    进入 _experiments_watermark/infer_data/_ 目录, 运行 _video2img.py_ 进行分帧, 运行 _crop_imgs.py_ 裁剪水印区域，运行 _make_meta.py_ 构建推理数据集meta_file.
+
+4. 调用预训练模型推理
+
+   进入 _experiments_watermark/DF2K/SRResNet_SRGAN/_ 目录, 运行 _infer.sh_, 推理结果储存在 _experiments/001_MSRResNet_DF2K_120k_B32_GPU4/infer_iter5k/visualization/VIDEO/_. 
+
+5. 将推理结果转化为视频
+
+   进入 _experiments_watermark/infer_data/_ 目录, 运行 _img2video.py_, 转化结果储存在 _experiments/001_MSRResNet_DF2K_120k_B32_GPU4/infer_iter5k/videos_pred/_. 
+
+
+
+
+
+
+
+
 <p align="center">
   <img src="assets/basicsr_xpixel_logo.png" height=120>
 </p>
