@@ -11,14 +11,14 @@
    ```
     |-- datasets
         |-- videos
-            |-- name1.mp4
-            |-- name2.mp4
+            |-- [name of video1].mp4
+            |-- [name of video2].mp4
             |-- ...
     ```
   
 3. 构建推理数据集
 
-    进入 _experiments_watermark/infer_data/_ 目录, 运行 _video2img.py_ 进行分帧, 运行 _crop_imgs.py_ 裁剪水印区域，运行 _make_meta.py_ 构建推理数据集meta_file.
+    进入 _experiments_watermark/infer_data/_ 目录, 运行 _video2img.py_ 进行分帧, 运行 _crop_imgs.py_ 裁剪水印区域，运行 _make_meta.py_ 构建推理数据集meta file.
 
 4. 调用预训练模型推理
 
