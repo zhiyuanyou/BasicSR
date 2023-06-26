@@ -1,32 +1,12 @@
 # general settings
-name: 002_SwinIR_DF2K_60k_B8_GPU4
+name: val_iter5k
 model_type: SwinIRModel
 scale: 1
-num_gpu: 4
+num_gpu: 1  # set num_gpu: 0 for cpu mode
 manual_seed: 0
 
 # dataset and data loader settings
 datasets:
-  train:
-    name: DF2K
-    type: PairedImageDataset
-    dataroot_gt: ""
-    dataroot_lq: ""
-    meta_info_file: ../check_data/train.txt
-    meta_with_dir: true
-    filename_tmpl: '{}'
-    io_backend:
-      type: disk
-
-    use_hflip: false
-    use_rot: false
-
-    # data loader
-    num_worker_per_gpu: 6
-    batch_size_per_gpu: 8
-    dataset_enlarge_ratio: 1
-    prefetch_mode: ~
-
   val:
     name: DF2K
     type: PairedImageDataset
@@ -54,39 +34,17 @@ network_g:
 
 # path
 path:
-  pretrain_network_g: ~
+  pretrain_network_g: ../../../experiments/002_SwinIR_DF2K_60k_B8_GPU4/models/net_g_5000.pth
   param_key_g: params_ema
   strict_load_g: true
   resume_state: ~
-  experiments_root: ../../../experiments
-
-# training settings
-train:
-  ema_decay: 0.999
-  optim_g:
-    type: Adam
-    lr: !!float 2e-4
-    weight_decay: 0
-    betas: [0.9, 0.99]
-
-  scheduler:
-    type: MultiStepLR
-    milestones: [30000, 40000, 50000, 55000]
-    gamma: 0.5
-
-  total_iter: 60000
-  warmup_iter: -1  # no warm up
-
-  # losses
-  pixel_opt:
-    type: L1Loss
-    loss_weight: 1.0
-    reduction: mean
+  results_root: ../../../experiments/002_SwinIR_DF2K_60k_B8_GPU4
 
 # validation settings
 val:
   val_freq: !!float 5e3
-  save_img: false
+  save_img: true
+  suffix: res
   metrics:
     psnr: # metric name, can be arbitrary
       type: calculate_psnr
