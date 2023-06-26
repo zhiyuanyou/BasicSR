@@ -13,9 +13,10 @@ datasets:
   val:
     name: DF2K
     type: PairedImageDataset
-    dataroot_gt: /opt/data/share/xtkong/DF2K/GT_demask
-    dataroot_lq: /opt/data/share/xtkong/DF2K/mask_demask
-    meta_info_file: /opt/data/private/142/BasicSR/experiments_watermark/DF2K/check_data/test.txt
+    dataroot_gt: ""
+    dataroot_lq: ""
+    meta_info_file: ../check_data/test.txt
+    meta_with_dir: true
     io_backend:
       type: disk
 
@@ -30,11 +31,11 @@ network_g:
 
 # path
 path:
-  pretrain_network_g: /opt/data/private/142/BasicSR/experiments/001_MSRResNet_DF2K_120k_B32_GPU4/models/net_g_5000.pth
+  pretrain_network_g: ../../../experiments/001_MSRResNet_DF2K_120k_B32_GPU4/models/net_g_5000.pth
   param_key_g: params_ema
   strict_load_g: true
   resume_state: ~
-  results_root: /opt/data/private/142/BasicSR/experiments/001_MSRResNet_DF2K_120k_B32_GPU4
+  results_root: ../../../experiments/001_MSRResNet_DF2K_120k_B32_GPU4
 
 # validation settings
 val:
