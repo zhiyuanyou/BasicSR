@@ -1,3 +1,8 @@
+# ignored data
+*core
+*train.txt
+*test.txt
+*infer.txt
 # ignored folders
 datasets/*
 experiments/*

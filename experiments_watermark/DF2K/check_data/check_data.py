@@ -6,8 +6,8 @@ import random
 random.seed(131)
 
 if __name__ == "__main__":
-    lq_paths = sorted(glob.glob("/opt/data/share/xtkong/DF2K625/image/mask/*.png"))
-    gt_paths = sorted(glob.glob("/opt/data/share/xtkong/DF2K625/image/GT/*.png"))
+    lq_paths = sorted(glob.glob("/opt/data/share/xtkong/DF2K/mask_demask/*.png"))
+    gt_paths = sorted(glob.glob("/opt/data/share/xtkong/DF2K/GT_demask/*.png"))
     lq_names = [os.path.basename(lq_path) for lq_path in lq_paths]
     gt_names = [os.path.basename(gt_path) for gt_path in gt_paths]
     assert lq_names == gt_names
