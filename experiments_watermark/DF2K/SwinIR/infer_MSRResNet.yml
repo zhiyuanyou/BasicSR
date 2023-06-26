@@ -1,0 +1,70 @@
+# Modified SRResNet w/o BN from:
+# Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network
+
+# general settings
+name: infer_iter5k
+model_type: SwinIRModel
+scale: 1
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+manual_seed: 0
+
+# dataset and data loader settings
+datasets:
+  val:
+    name: VIDEO
+    type: PairedImageDataset
+    dataroot_gt: ../../../datasets/imgs_crop/
+    dataroot_lq: ../../../datasets/imgs_crop/
+    meta_info_file: ../../infer_data/infer.txt
+    meta_with_dir: true
+    io_backend:
+      type: disk
+
+# network structures
+network_g:
+  type: SwinIR
+  upscale: 1
+  in_chans: 3
+  img_size: [100, 400]
+  window_size: 10
+  img_range: 1.
+  depths: [6, 6, 6, 6]
+  embed_dim: 60
+  num_heads: [6, 6, 6, 6]
+  mlp_ratio: 2
+  upsampler: 'pixelshuffle'
+  resi_connection: '1conv'
+
+# path
+path:
+  pretrain_network_g: ../../../experiments/002_SwinIR_DF2K_60k_B8_GPU4/models/net_g_5000.pth
+  param_key_g: params_ema
+  strict_load_g: true
+  resume_state: ~
+  results_root: ../../../experiments/002_SwinIR_DF2K_60k_B8_GPU4
+
+# validation settings
+val:
+  val_freq: !!float 5e3
+  save_img: true
+  save_parent_dir: true
+  suffix: res
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 2
+      test_y_channel: false
+
+# logging settings
+logger:
+  print_freq: 100
+  save_checkpoint_freq: !!float 5e3
+  use_tb_logger: true
+  wandb:
+    project: ~
+    resume_id: ~
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 29500
