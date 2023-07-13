@@ -2,7 +2,7 @@ from torch import nn as nn
 from torch.nn import functional as F
 
 from basicsr.utils.registry import ARCH_REGISTRY
-from .arch_util import ResidualBlockNoBN, default_init_weights, make_layer
+from .arch_util import ResidualBlockNoBN, Sin, default_init_weights, make_layer
 
 
 @ARCH_REGISTRY.register()
@@ -22,12 +22,12 @@ class MSRResNet(nn.Module):
         upscale (int): Upsampling factor. Support x2, x3 and x4. Default: 4.
     """
 
-    def __init__(self, num_in_ch=3, num_out_ch=3, num_feat=64, num_block=16, upscale=4):
+    def __init__(self, num_in_ch=3, num_out_ch=3, num_feat=64, num_block=16, upscale=4, activate="relu"):
         super(MSRResNet, self).__init__()
         self.upscale = upscale
 
         self.conv_first = nn.Conv2d(num_in_ch, num_feat, 3, 1, 1)
-        self.body = make_layer(ResidualBlockNoBN, num_block, num_feat=num_feat)
+        self.body = make_layer(ResidualBlockNoBN, num_block, num_feat=num_feat, activate=activate)
 
         # upsampling
         if self.upscale in [1, 2, 3]:
@@ -42,6 +42,10 @@ class MSRResNet(nn.Module):
         self.conv_last = nn.Conv2d(num_feat, num_out_ch, 3, 1, 1)
 
         # activation function
+        if activate == "relu":
+            self.act = nn.LeakyReLU(negative_slope=0.1, inplace=True)
+        elif activate == "sin":
+            self.act = Sin()
         self.lrelu = nn.LeakyReLU(negative_slope=0.1, inplace=True)
 
         # initialization
@@ -50,14 +54,14 @@ class MSRResNet(nn.Module):
             default_init_weights(self.upconv2, 0.1)
 
     def forward(self, x):
-        feat = self.lrelu(self.conv_first(x))
+        feat = self.act(self.conv_first(x))
         out = self.body(feat)
 
         if self.upscale == 4:
-            out = self.lrelu(self.pixel_shuffle(self.upconv1(out)))
-            out = self.lrelu(self.pixel_shuffle(self.upconv2(out)))
+            out = self.act(self.pixel_shuffle(self.upconv1(out)))
+            out = self.act(self.pixel_shuffle(self.upconv2(out)))
         elif self.upscale in [1, 2, 3]:
-            out = self.lrelu(self.pixel_shuffle(self.upconv1(out)))
+            out = self.act(self.pixel_shuffle(self.upconv1(out)))
 
         out = self.conv_last(self.lrelu(self.conv_hr(out)))
         base = F.interpolate(x, scale_factor=self.upscale, mode='bilinear', align_corners=False)
