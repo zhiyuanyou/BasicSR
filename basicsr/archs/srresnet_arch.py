@@ -30,7 +30,7 @@ class MSRResNet(nn.Module):
         self.body = make_layer(ResidualBlockNoBN, num_block, num_feat=num_feat)
 
         # upsampling
-        if self.upscale in [2, 3]:
+        if self.upscale in [1, 2, 3]:
             self.upconv1 = nn.Conv2d(num_feat, num_feat * self.upscale * self.upscale, 3, 1, 1)
             self.pixel_shuffle = nn.PixelShuffle(self.upscale)
         elif self.upscale == 4:
@@ -56,7 +56,7 @@ class MSRResNet(nn.Module):
         if self.upscale == 4:
             out = self.lrelu(self.pixel_shuffle(self.upconv1(out)))
             out = self.lrelu(self.pixel_shuffle(self.upconv2(out)))
-        elif self.upscale in [2, 3]:
+        elif self.upscale in [1, 2, 3]:
             out = self.lrelu(self.pixel_shuffle(self.upconv1(out)))
 
         out = self.conv_last(self.lrelu(self.conv_hr(out)))
