@@ -15,6 +15,33 @@ from basicsr.utils import get_root_logger
 
 
 @torch.no_grad()
+def sin_init_weights(module_list, bias_fill=0, **kwargs):
+    """Initialize network weights.
+
+    Args:
+        module_list (list[nn.Module] | nn.Module): Modules to be initialized.
+        bias_fill (float): The value to fill bias. Default: 0
+        kwargs (dict): Other arguments for initialization function.
+    """
+    if not isinstance(module_list, list):
+        module_list = [module_list]
+    for module in module_list:
+        for m in module.modules():
+            if isinstance(m, nn.Conv2d):
+                init.uniform_(m.weight, a=-math.sqrt(6 / m.in_channels), b=math.sqrt(6 / m.in_channels))
+                if m.bias is not None:
+                    m.bias.data.fill_(bias_fill)
+            elif isinstance(m, nn.Linear):
+                init.uniform_(m.weight, a=-math.sqrt(6 / m.in_features), b=math.sqrt(6 / m.in_features))
+                if m.bias is not None:
+                    m.bias.data.fill_(bias_fill)
+            elif isinstance(m, _BatchNorm):
+                init.constant_(m.weight, 1)
+                if m.bias is not None:
+                    m.bias.data.fill_(bias_fill)
+
+
+@torch.no_grad()
 def default_init_weights(module_list, scale=1, bias_fill=0, **kwargs):
     """Initialize network weights.
 
@@ -81,7 +108,7 @@ class ResidualBlockNoBN(nn.Module):
             otherwise, use default_init_weights. Default: False.
     """
 
-    def __init__(self, num_feat=64, res_scale=1, pytorch_init=False, activate="relu"):
+    def __init__(self, num_feat=64, res_scale=1, pytorch_init=False, activate="relu", init=None):
         super(ResidualBlockNoBN, self).__init__()
         self.res_scale = res_scale
         self.conv1 = nn.Conv2d(num_feat, num_feat, 3, 1, 1, bias=True)
@@ -91,8 +118,12 @@ class ResidualBlockNoBN(nn.Module):
         elif activate == "sin":
             self.act = Sin()
 
-        if not pytorch_init:
-            default_init_weights([self.conv1, self.conv2], 0.1)
+        if init is None:
+            if not pytorch_init:
+                default_init_weights([self.conv1, self.conv2], 0.1)
+        elif init == "sin":
+            if not pytorch_init:
+                sin_init_weights([self.conv1, self.conv2])
 
     def forward(self, x):
         identity = x
