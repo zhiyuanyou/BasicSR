@@ -88,11 +88,7 @@ def load_resume_state(opt):
     return resume_state
 
 
-def train_pipeline(root_path):
-    # parse options, set distributed setting, set random seed
-    opt, args = parse_options(root_path, is_train=True)
-    opt['root_path'] = root_path
-
+def train_pipeline(opt, args):
     torch.backends.cudnn.benchmark = True
     # torch.backends.cudnn.deterministic = True
 
@@ -213,4 +209,12 @@ def train_pipeline(root_path):
 
 if __name__ == '__main__':
     root_path = osp.abspath(osp.join(__file__, osp.pardir, osp.pardir))
-    train_pipeline(root_path)
+    # parse options, set distributed setting, set random seed
+    opt, args = parse_options(root_path, is_train=True)
+    opt['root_path'] = root_path
+    meta_info_files = opt['datasets']['train']['meta_info_files']
+    total_iters = opt['train']['total_iters']
+    for meta_info_file, total_iter in zip(meta_info_files, total_iters):
+        opt['datasets']['train']['meta_info_file'] = meta_info_file
+        opt['train']['total_iter'] = total_iter
+        train_pipeline(opt, args)
