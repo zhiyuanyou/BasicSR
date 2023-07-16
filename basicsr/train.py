@@ -120,8 +120,8 @@ def train_pipeline(opt, args):
     model = build_model(opt)
     if resume_state:  # resume training
         model.resume_training(resume_state)  # handle optimizers and schedulers
-        logger.info(f"Resuming training from epoch: {resume_state['epoch']}, iter: {resume_state['iter']}.")
-        start_epoch = resume_state['epoch']
+        logger.info(f"Resuming training from iter: {resume_state['iter']}.")
+        start_epoch = 0  # epoch is invalid with multi-stage training of different datasets
         current_iter = resume_state['iter']
     else:
         start_epoch = 0
