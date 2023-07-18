@@ -25,6 +25,29 @@ def charbonnier_loss(pred, target, eps=1e-12):
 
 
 @LOSS_REGISTRY.register()
+class RegularizationLoss(nn.Module):
+    def __init__(self, regularization_model_path, loss_weight=1.0, loss_type="l2", device="cuda"):
+        super(RegularizationLoss, self).__init__()
+        self.loss_weight = loss_weight
+        self.loss_type = loss_type
+        self.device = device
+        self.state_dict_gt = torch.load(regularization_model_path)['params']
+        for key in self.state_dict_gt:
+            self.state_dict_gt[key] = self.state_dict_gt[key].to(self.device).detach()
+        if loss_type == "l1":
+            self.loss = L1Loss()
+        elif loss_type == "l2":
+            self.loss = MSELoss()
+
+    def forward(self, state_dict):
+        loss = 0
+        for key in state_dict:
+            key_gt = key[7:] if key.startswith('module.') else key
+            loss += self.loss(state_dict[key], self.state_dict_gt[key_gt].detach())
+        return self.loss_weight * loss
+
+
+@LOSS_REGISTRY.register()
 class L1Loss(nn.Module):
     """L1 (mean absolute error, MAE) loss.
 

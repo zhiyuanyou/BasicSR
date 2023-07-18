@@ -66,6 +66,12 @@ class SRModel(BaseModel):
         if self.cri_pix is None and self.cri_perceptual is None:
             raise ValueError('Both pixel and perceptual losses are None.')
 
+        if train_opt.get('regularization_opt'):
+            train_opt['regularization_opt']['device'] = self.device
+            self.cri_regularization = build_loss(train_opt['regularization_opt']).to(self.device)
+        else:
+            self.cri_regularization = None
+
         # set up optimizers and schedulers
         self.setup_optimizers()
         self.setup_schedulers()
@@ -111,6 +117,11 @@ class SRModel(BaseModel):
             if l_style is not None:
                 l_total += l_style
                 loss_dict['l_style'] = l_style
+        # regularization loss
+        if self.cri_regularization:
+            l_regu = self.cri_regularization(self.net_g.state_dict())
+            l_total += l_regu
+            loss_dict['l_regu'] = l_regu
 
         l_total.backward()
         self.optimizer_g.step()
