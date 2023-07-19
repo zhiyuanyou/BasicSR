@@ -94,6 +94,9 @@ class SRModel(BaseModel):
     def optimize_parameters(self, current_iter):
         self.optimizer_g.zero_grad()
         self.output = self.net_g(self.lq)
+        if isinstance(self.output, tuple):
+            assert len(self.output) == 2, f"length of output should be 2, but get {len(self.output)}"
+            self.output, self.feat = self.output
 
         l_total = 0
         loss_dict = OrderedDict()
@@ -130,6 +133,9 @@ class SRModel(BaseModel):
             with torch.no_grad():
                 self.output = self.net_g(self.lq)
             self.net_g.train()
+        if isinstance(self.output, tuple):
+            assert len(self.output) == 2, f"length of output should be 2, but get {len(self.output)}"
+            self.output, self.feat = self.output
 
     def test_selfensemble(self):
         # TODO: to be tested
