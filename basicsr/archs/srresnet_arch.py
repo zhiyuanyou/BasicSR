@@ -22,9 +22,10 @@ class MSRResNet(nn.Module):
         upscale (int): Upsampling factor. Support x2, x3 and x4. Default: 4.
     """
 
-    def __init__(self, num_in_ch=3, num_out_ch=3, num_feat=64, num_block=16, upscale=4):
+    def __init__(self, num_in_ch=3, num_out_ch=3, num_feat=64, num_block=16, upscale=4, residual=True):
         super(MSRResNet, self).__init__()
         self.upscale = upscale
+        self.residual = residual
 
         self.conv_first = nn.Conv2d(num_in_ch, num_feat, 3, 1, 1)
         self.body = make_layer(ResidualBlockNoBN, num_block, num_feat=num_feat)
@@ -60,6 +61,7 @@ class MSRResNet(nn.Module):
             out = self.lrelu(self.pixel_shuffle(self.upconv1(out)))
 
         out = self.conv_last(self.lrelu(self.conv_hr(out)))
-        base = F.interpolate(x, scale_factor=self.upscale, mode='bilinear', align_corners=False)
-        out += base
+        if self.residual:
+            base = F.interpolate(x, scale_factor=self.upscale, mode='bilinear', align_corners=False)
+            out += base
         return out
