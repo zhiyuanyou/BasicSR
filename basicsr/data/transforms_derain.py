@@ -103,7 +103,7 @@ def paired_resize(img_gt, img_lq, mask, resize, resize_small=False):
     return img_gt, img_lq, mask
 
 
-def random_cutout(img, n_holes, cutout_ratio_h, cutout_ratio_w, fill_in=(0, 0, 0)):
+def random_cutout(img, n_holes, cutout_ratio_h, cutout_ratio_w, fill_in=(255, 255, 255)):
     """
     Args:
         img (ndarray): image.

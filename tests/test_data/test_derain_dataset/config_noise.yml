@@ -32,8 +32,9 @@ datasets:
       cutout_prob: 0.8
       kwargs:
         n_holes: [1, 2]
-        cutout_ratio_h: [0.2, 0.3]
-        cutout_ratio_w: [0.2, 0.3]
+        cutout_ratio_h: [0.2, 0.5]
+        cutout_ratio_w: [0.2, 0.5]
+        fill_in: [255, 255, 255]
     # rain generator
     add_rain_cfg:
       rain_prob: 0.9
