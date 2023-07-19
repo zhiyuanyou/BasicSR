@@ -96,7 +96,7 @@ class SRModel(BaseModel):
         self.output = self.net_g(self.lq)
         if isinstance(self.output, tuple):
             assert len(self.output) == 2, f"length of output should be 2, but get {len(self.output)}"
-            self.output, self.feat = self.output
+            self.output, self.feats = self.output
 
         l_total = 0
         loss_dict = OrderedDict()
@@ -135,7 +135,7 @@ class SRModel(BaseModel):
             self.net_g.train()
         if isinstance(self.output, tuple):
             assert len(self.output) == 2, f"length of output should be 2, but get {len(self.output)}"
-            self.output, self.feat = self.output
+            self.output, self.feats = self.output
 
     def test_selfensemble(self):
         # TODO: to be tested
