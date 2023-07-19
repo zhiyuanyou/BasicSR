@@ -66,6 +66,11 @@ class SRModel(BaseModel):
         if self.cri_pix is None and self.cri_perceptual is None:
             raise ValueError('Both pixel and perceptual losses are None.')
 
+        if train_opt.get('feature_opt'):
+            self.cri_feature = build_loss(train_opt['feature_opt']).to(self.device)
+        else:
+            self.cri_feature = None
+
         # set up optimizers and schedulers
         self.setup_optimizers()
         self.setup_schedulers()
@@ -114,6 +119,14 @@ class SRModel(BaseModel):
             if l_style is not None:
                 l_total += l_style
                 loss_dict['l_style'] = l_style
+        # feature loss
+        if self.cri_feature:
+            assert hasattr(self, 'feats'), 'SRModel must have feats for feature loss'
+            with torch.no_grad():
+                _, feats_gt = self.net_g(self.gt)
+            l_feat = self.cri_feature(self.feats, feats_gt)
+            l_total += l_feat
+            loss_dict['l_feat'] = l_feat
 
         l_total.backward()
         self.optimizer_g.step()

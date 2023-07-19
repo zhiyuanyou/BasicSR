@@ -25,6 +25,27 @@ def charbonnier_loss(pred, target, eps=1e-12):
 
 
 @LOSS_REGISTRY.register()
+class FeatureLoss(nn.Module):
+    def __init__(self, layers, loss_weight=1.0, loss_type="l2"):
+        super(FeatureLoss, self).__init__()
+        self.layers = layers
+        self.loss_weight = loss_weight
+        self.loss_type = loss_type
+        if loss_type == "l1":
+            self.loss = L1Loss()
+        elif loss_type == "l2":
+            self.loss = MSELoss()
+
+    def forward(self, feats_lq, feats_gt):
+        loss = 0
+        for layer in self.layers:
+            feat_lq = feats_lq[f'layer{layer}']
+            feat_gt = feats_gt[f'layer{layer}']
+            loss += self.loss(feat_lq, feat_gt.detach())
+        return self.loss_weight * loss / len(self.layers)
+
+
+@LOSS_REGISTRY.register()
 class L1Loss(nn.Module):
     """L1 (mean absolute error, MAE) loss.
 
