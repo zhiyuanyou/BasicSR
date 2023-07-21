@@ -204,9 +204,10 @@ def train_pipeline(root_path):
     logger.info(f'End of training. Time consumed: {consumed_time}')
     logger.info('Save the latest model.')
     model.save(epoch=-1, current_iter=-1)  # -1 stands for the latest
-    if opt.get('val') is not None and opt['val'].get('val_end', None):
-        for val_loader in val_loaders:
-            model.validation(val_loader, current_iter, tb_logger, opt['val']['save_img'])
+    if opt.get('val') is not None:
+        if opt['val'].get('val_end', None):
+            for val_loader in val_loaders:
+                model.validation(val_loader, current_iter, tb_logger, opt['val']['save_img'])
     if tb_logger:
         tb_logger.close()
 
