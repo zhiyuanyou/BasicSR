@@ -1,10 +1,11 @@
+import random
 import numpy as np
 import os.path as osp
 import torch.utils.data as data
 from torchvision.transforms.functional import normalize
 
-from basicsr.data.degradations import random_add_gaussian_noise, random_add_poisson_noise
-from basicsr.data.derain_util import RainGenerator, set_val_seed
+from basicsr.data.degradations import random_generate_gaussian_noise, random_generate_poisson_noise
+from basicsr.data.derain_util import RainGenerator, set_val_seed, get_mask
 from basicsr.data.transforms import augment
 from basicsr.data.transforms_derain import paired_random_crop_with_mask, paired_resize, random_cutout
 from basicsr.utils import FileClient, get_root_logger, imfrombytes, img2tensor, imwrite, scandir
@@ -26,6 +27,7 @@ class DerainDataset(data.Dataset):
         self.io_backend_opt = opt["io_backend"]
         self.mean = opt.get("mean", None)
         self.std = opt.get("std", None)
+        self.mask_cfg = opt.get("mask_cfg", None)
         self.add_noise_cfg = opt.get("add_noise_cfg", None)
         self.cutout_cfg = opt.get("cutout_cfg", None)
         self.add_rain_cfg = opt.get("add_rain_cfg", None)
@@ -108,28 +110,32 @@ class DerainDataset(data.Dataset):
             use_rot = self.opt.get("use_rot", False)
             img_gt, rain, img_lq = augment([img_gt, rain, img_lq], use_flip, use_rot)
 
+        # add rain
+        if self.add_rain_cfg:
+            if np.random.uniform() < self.add_rain_cfg["rain_prob"]:
+                rain, img_lq = self.rain_generator(img_lq)
+
         # add noise
-        if self.add_noise_cfg:
-            if np.random.uniform() < self.add_noise_cfg["noise_prob"]:
-                img_lq = (img_lq / 255.).astype(np.float32)
-                if self.add_noise_cfg["noise_type"] == "gaussian":
-                    # kwargs: sigma_range: [1, 15], gray_prob: 0.5
-                    img_lq = random_add_gaussian_noise(img_lq, **self.add_noise_cfg["kwargs"])
-                elif self.add_noise_cfg["noise_type"] == "poisson":
-                    # kwargs: scale_range: [0.05, 1.], gray_prob: 0.5
-                    img_lq = random_add_poisson_noise(img_lq, **self.add_noise_cfg["kwargs"])
-                img_lq = (img_lq * 255.).astype(np.uint8)
+        if self.add_noise_cfg and self.mask_cfg:
+            weights = self.add_noise_cfg["weights"]
+            idx = random.choices(list(range(len(weights))), weights=weights, k=1)[0]
+            noise_cfg = self.add_noise_cfg["options"][idx]
+            mask = get_mask(self.mask_cfg["pattern_size"], self.mask_cfg["scale"], self.mask_cfg["prob"])
+            img_lq = (img_lq / 255.).astype(np.float32)
+            if noise_cfg["noise_type"] == "gaussian":
+                # kwargs: sigma_range: [250, 300], gray_prob: 0.0
+                noise = random_generate_gaussian_noise(img_lq, **noise_cfg["kwargs"])
+            elif noise_cfg["noise_type"] == "poisson":
+                # kwargs: scale_range: [10, 20], gray_prob: 0.0
+                noise = random_generate_poisson_noise(img_lq, **noise_cfg["kwargs"])
+            img_lq = img_lq + noise * (1 - mask)
+            img_lq = (img_lq * 255.).astype(np.uint8)
 
         # cutout
         if self.cutout_cfg:
             if np.random.uniform() < self.cutout_cfg["cutout_prob"]:
                 # kwargs: n_holes: [1, 2], cutout_ratio_h: [0.2, 0.3], cutout_ratio_w: [0.2, 0.3]
                 img_lq = random_cutout(img_lq, **self.cutout_cfg["kwargs"])
-
-        # add rain
-        if self.add_rain_cfg:
-            if np.random.uniform() < self.add_rain_cfg["rain_prob"]:
-                rain, img_lq = self.rain_generator(img_lq)
 
         if self.vis_lq:
             img_name = osp.splitext(osp.basename(lq_path))[0]

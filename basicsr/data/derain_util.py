@@ -148,3 +148,14 @@ def set_val_seed(seed):
     """
     np.random.seed(seed)
     random.seed(seed)
+
+
+def get_mask(pattern_size, scale, prob=0.75):
+    """
+    pattern_size * scale = image shape
+    """
+    mask = np.random.choice([0, 1], size=(pattern_size, pattern_size), p=[prob, 1 - prob])
+    mask = np.repeat(mask, scale, axis=0)
+    mask = np.repeat(mask, scale, axis=1)
+    mask = np.repeat(mask[:, :, np.newaxis], 3, axis=2)
+    return mask
