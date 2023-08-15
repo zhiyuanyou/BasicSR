@@ -10,7 +10,7 @@ if __name__ == "__main__":
     temp_test_dir = "./temp_test_dir/"
     os.makedirs(temp_test_dir, exist_ok=True)
 
-    opt = yaml_load("./config.yml")
+    opt = yaml_load("./config_noise.yml")
     for phase, dataset_opt in opt["datasets"].items():
         dataset_opt["phase"] = phase
         dataset_opt["scale"] = opt["scale"]
